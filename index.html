@@ -35,32 +35,36 @@ Loading aplikasi...
 
 <script>
 
-// Register Service Worker dulu
+// Register Service Worker
 
 if ('serviceWorker' in navigator) {
 
-window.addEventListener('load', function(){
+    window.addEventListener('load', function(){
 
-navigator.serviceWorker.register('./service-worker.js')
-.then(function(reg){
+        navigator.serviceWorker.register(
+            '/otp_cctv/service-worker.js',
+            {
+                scope: '/otp_cctv/'
+            }
+        )
+        .then(function(reg){
 
-console.log(
-"Service Worker aktif",
-reg.scope
-);
+            console.log(
+                "Service Worker aktif",
+                reg.scope
+            );
 
-})
-.catch(function(err){
+        })
+        .catch(function(err){
 
-console.log(
-"Service Worker gagal",
-err
-);
+            console.log(
+                "Service Worker gagal",
+                err
+            );
 
-});
+        });
 
-
-});
+    });
 
 }
 
