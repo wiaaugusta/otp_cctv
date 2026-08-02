@@ -13,35 +13,71 @@
 
 <meta name="theme-color" content="#1976d2">
 
+<link rel="apple-touch-icon" href="icon-192.png">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
 </head>
+
 
 <body>
 
-<h2 align="center">OTP CCTV</h2>
+<h2 align="center">
+OTP CCTV
+</h2>
+
 
 <p align="center">
 Loading aplikasi...
 </p>
 
-<script>
 
-setTimeout(function(){
-
-window.location.href="https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec";
-
-},1000);
-
-</script>
 
 <script>
+
+// Register Service Worker dulu
 
 if ('serviceWorker' in navigator) {
 
-navigator.serviceWorker.register('service-worker.js');
+window.addEventListener('load', function(){
+
+navigator.serviceWorker.register('./service-worker.js')
+.then(function(reg){
+
+console.log(
+"Service Worker aktif",
+reg.scope
+);
+
+})
+.catch(function(err){
+
+console.log(
+"Service Worker gagal",
+err
+);
+
+});
+
+
+});
 
 }
 
+
+// Redirect ke Apps Script
+
+setTimeout(function(){
+
+window.location.href =
+"https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec";
+
+
+},800);
+
+
 </script>
+
 
 </body>
 
