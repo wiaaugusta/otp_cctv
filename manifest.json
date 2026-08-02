@@ -1,4 +1,5 @@
 {
+  "id": "/otp-cctv",
   "name": "OTP CCTV",
   "short_name": "OTP",
   "description": "Request OTP CCTV",
