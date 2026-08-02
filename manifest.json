@@ -3,17 +3,12 @@
   "name": "OTP CCTV",
   "short_name": "OTP CCTV",
   "description": "Request OTP CCTV",
-  
   "start_url": "/otp_cctv/",
   "scope": "/otp_cctv/",
-  
   "display": "standalone",
-  
   "background_color": "#ffffff",
   "theme_color": "#1976d2",
-  
   "orientation": "portrait",
-
   "icons": [
     {
       "src": "/otp_cctv/icon-192.png",
@@ -21,7 +16,7 @@
       "type": "image/png"
     },
     {
-      "src": "/otp_cct_v/icon-512.png",
+      "src": "/otp_cctv/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
