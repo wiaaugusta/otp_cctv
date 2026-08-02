@@ -1,22 +1,27 @@
 {
-  "id": "/otp-cctv",
+  "id": "/otp_cctv/",
   "name": "OTP CCTV",
-  "short_name": "OTP",
+  "short_name": "OTP CCTV",
   "description": "Request OTP CCTV",
-  "start_url": "./",
-  "scope": "./",
+  
+  "start_url": "/otp_cctv/",
+  "scope": "/otp_cctv/",
+  
   "display": "standalone",
+  
   "background_color": "#ffffff",
   "theme_color": "#1976d2",
+  
   "orientation": "portrait",
+
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "/otp_cctv/icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "icon-512.png",
+      "src": "/otp_cct_v/icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
