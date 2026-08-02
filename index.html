@@ -3,97 +3,301 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OTP CCTV</title>
+  <title>Form OTP CCTV</title>
   <link rel="manifest" href="/otp_cctv/manifest.json">
   <style>
-    /* style sama seperti di formOtp Anda */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+      padding: 16px;
+    }
+    .container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 24px;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 24px;
+      font-weight: 600;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #2c3e50;
+    }
+    input, select {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #3498db;
+      box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+    }
+    input[readonly] {
+      background-color: #f8f9fa;
+      color: #6c757d;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    button:disabled {
+      background-color: #bdc3c7;
+      cursor: not-allowed;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 12px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 500;
+      word-wrap: break-word;
+      transition: all 0.3s ease;
+      font-size: 15px;
+      line-height: 1.5;
+      display: none;
+    }
+    .success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+    .info {
+      background-color: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+    .loader {
+      display: none;
+      text-align: center;
+      margin: 15px 0;
+    }
+    .loader-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .approval-note {
+      display: none;
+      background-color: #fff3cd;
+      color: #856404;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 15px;
+      border: 1px solid #ffeeba;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    @media (max-width: 600px) {
+      body { padding: 12px; }
+      .container { padding: 18px; border-radius: 10px; }
+      h2 { font-size: 18px; margin-bottom: 20px; }
+      input, select { padding: 12px; font-size: 15px; }
+      button { padding: 12px; font-size: 15px; }
+      #result { font-size: 14px; padding: 10px; }
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>Request OTP CCTV</h2>
-    <!-- form sama seperti sebelumnya -->
+
     <div class="form-group">
       <label for="email">Email:</label>
-      <input type="email" id="email" placeholder="email@domain.com">
+      <input type="email" id="email" placeholder="email@domain.com" autocomplete="email">
     </div>
+
     <div class="form-group">
       <label for="kodeToko">Kode Toko:</label>
-      <input type="text" id="kodeToko" placeholder="Masukkan kode toko">
+      <input 
+        type="text" 
+        id="kodeToko" 
+        placeholder="Masukkan kode toko"
+        onkeypress="if(event.key==='Enter'){ fetchNamaToko(); return false; }"
+        onblur="fetchNamaToko()"
+        oninput="this.value = this.value.toUpperCase()"
+      >
     </div>
+
     <div class="form-group">
       <label for="namaToko">Nama Toko:</label>
       <input type="text" id="namaToko" readonly>
     </div>
+
     <div class="form-group">
       <label for="role">Role:</label>
-      <select id="role">
+      <select id="role" onchange="toggleApprovalNote()">
         <option value="user">User</option>
         <option value="admin">Admin</option>
       </select>
     </div>
-    <button onclick="submitRequest()">Request OTP</button>
+
+    <div id="approvalNote" class="approval-note">
+      <strong>Perhatian:</strong> Permintaan OTP dengan role Admin memerlukan persetujuan atasan. OTP akan dikirim setelah disetujui.
+    </div>
+
+    <button onclick="submitRequest()" id="submitBtn">Request OTP</button>
+
+    <div class="loader" id="loader">
+      <div class="loader-spinner"></div>
+      <p>Memproses permintaan...</p>
+    </div>
+
     <div id="result"></div>
   </div>
 
   <script>
-    // GANTI dengan URL Web App Apps Script Anda (YANG SUDAH DIPUBLIKASIKAN)
+    // ================= KONFIGURASI =================
+    // GANTI DENGAN URL DEPLOYMENT WEB APP ANDA
     const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
+    // ===============================================
+
+    function toggleApprovalNote() {
+      const role = document.getElementById("role").value;
+      const note = document.getElementById("approvalNote");
+      note.style.display = (role === "admin") ? "block" : "none";
+    }
 
     async function fetchNamaToko() {
-      const kodeToko = document.getElementById('kodeToko').value;
-      if (!kodeToko) return;
-      
+      const kodeToko = document.getElementById("kodeToko").value.trim();
+      const namaTokoInput = document.getElementById("namaToko");
+      if (!kodeToko) {
+        namaTokoInput.value = "";
+        return;
+      }
+
+      namaTokoInput.value = "Mencari...";
+
       try {
-        const response = await fetch(`${API_URL}?action=getNamaToko&kode=${kodeToko}`);
+        const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kodeToko)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
-        document.getElementById('namaToko').value = result.success ? result.namaToko : 'Toko tidak ditemukan';
+
+        if (result.success) {
+          namaTokoInput.value = result.namaToko;
+        } else {
+          namaTokoInput.value = "Toko tidak ditemukan";
+        }
       } catch (error) {
-        document.getElementById('namaToko').value = 'Error: ' + error.message;
+        console.error("fetchNamaToko error:", error);
+        namaTokoInput.value = "Error: " + error.message;
       }
     }
 
     async function submitRequest() {
-      const email = document.getElementById('email').value;
-      const kodeToko = document.getElementById('kodeToko').value;
-      const role = document.getElementById('role').value;
-      
+      const email = document.getElementById("email").value.trim();
+      const kodeToko = document.getElementById("kodeToko").value.trim();
+      const role = document.getElementById("role").value;
+      const namaToko = document.getElementById("namaToko").value;
+
+      // Validasi
       if (!email || !kodeToko) {
-        showResult('Harap isi semua field', 'error');
+        showResult("Harap isi email dan kode toko", "error");
+        return;
+      }
+      if (namaToko === "Toko tidak ditemukan" || namaToko === "Error: Failed to fetch" || !namaToko) {
+        showResult("Kode toko tidak valid, periksa kembali", "error");
         return;
       }
 
+      // Sembunyikan hasil sebelumnya
+      document.getElementById("result").style.display = "none";
+      document.getElementById("loader").style.display = "block";
+      document.getElementById("submitBtn").disabled = true;
+
       try {
+        const formData = new URLSearchParams();
+        formData.append("action", "requestOtp");
+        formData.append("email", email);
+        formData.append("kode", kodeToko);
+        formData.append("role", role);
+
         const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: new URLSearchParams({
-            action: 'requestOtp',
-            email: email,
-            kode: kodeToko,
-            role: role
-          })
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData
         });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const result = await response.json();
-        showResult(result.message, result.success ? 'success' : 'error');
+
         if (result.success) {
-          document.getElementById('kodeToko').value = '';
-          document.getElementById('namaToko').value = '';
+          showResult(result.message, "success");
+          // Reset field (kecuali email)
+          document.getElementById("kodeToko").value = "";
+          document.getElementById("namaToko").value = "";
+          document.getElementById("role").value = "user";
+          toggleApprovalNote();
+        } else {
+          showResult(result.message, "error");
         }
       } catch (error) {
-        showResult('Error: ' + error.message, 'error');
+        console.error("submitRequest error:", error);
+        showResult("Error: " + error.message, "error");
+      } finally {
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("submitBtn").disabled = false;
       }
     }
 
     function showResult(message, type) {
-      const div = document.getElementById('result');
-      div.textContent = message;
-      div.className = type;
-      div.style.display = 'block';
+      const resultDiv = document.getElementById("result");
+      resultDiv.textContent = message;
+      resultDiv.className = type;
+      resultDiv.style.display = "block";
     }
 
-    // Event listener untuk auto-fetch nama toko
-    document.getElementById('kodeToko').addEventListener('blur', fetchNamaToko);
+    // Inisialisasi
+    document.addEventListener("DOMContentLoaded", function() {
+      toggleApprovalNote();
+      // Auto uppercase untuk kode toko (sudah di oninput)
+    });
   </script>
 </body>
 </html>
