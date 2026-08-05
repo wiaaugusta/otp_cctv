@@ -376,7 +376,7 @@
     let emails = getEmailHistory();
     emails = emails.filter(e => e.toLowerCase() !== email.toLowerCase());
     emails.unshift(email);
-    if (emails.length > 10) emails = emails.slice(0, 10);
+    if (emails.length > 3) emails = emails.slice(0, 3);
     saveEmailHistory(emails);
     updateEmailDatalist();
   }
