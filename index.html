@@ -172,7 +172,6 @@
       border: 1px solid #f5c6cb;
     }
 
-    /* Overlay loading */
     .overlay {
       position: fixed;
       top: 0;
@@ -230,7 +229,6 @@
       margin-top: 4px;
     }
 
-    /* Approval note */
     .approval-note {
       background: #fef9e6;
       border-left: 4px solid #f5b342;
@@ -250,7 +248,14 @@
       margin-right: 6px;
     }
 
-    /* Responsive */
+    /* hint kecil */
+    .hint {
+      font-size: 12px;
+      color: #7a8fa0;
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
     @media (max-width: 600px) {
       .card-header {
         padding: 20px 20px 16px;
@@ -306,11 +311,12 @@
           autocomplete="off"
           maxlength="10"
         >
+        <div class="hint">Tekan <kbd>Enter</kbd> untuk mencari nama toko</div>
       </div>
 
       <div class="form-group">
         <label for="namaToko">Nama Toko</label>
-        <input type="text" id="namaToko" readonly placeholder="Ketik kode toko di atas">
+        <input type="text" id="namaToko" readonly placeholder="Ketik kode lalu tekan Enter">
       </div>
 
       <div class="form-group">
@@ -334,7 +340,6 @@
   <script>
     // ===== KONFIGURASI =====
     const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
-    const DEBOUNCE_DELAY = 400; // ms
 
     // ===== ELEMEN =====
     const kodeInput = document.getElementById('kodeToko');
@@ -346,37 +351,33 @@
     const overlay = document.getElementById('loadingOverlay');
     const approvalNote = document.getElementById('approvalNote');
 
-    let fetchTimeout = null;
     let isFetching = false;
+    let isSubmitting = false;
 
-    // ===== FUNGSI TOGGLE APPROVAL NOTE =====
+    // ===== TOGGLE APPROVAL NOTE =====
     function toggleApprovalNote() {
       approvalNote.classList.toggle('show', roleSelect.value === 'admin');
     }
     roleSelect.addEventListener('change', toggleApprovalNote);
     toggleApprovalNote();
 
-    // ===== FETCH NAMA TOKO (dengan debounce) =====
-    function triggerFetchNamaToko() {
-      const kode = kodeInput.value.trim();
-      if (!kode) {
-        namaInput.value = '';
-        namaInput.className = '';
-        return;
-      }
-
-      // Hapus timeout sebelumnya
-      if (fetchTimeout) {
-        clearTimeout(fetchTimeout);
-        fetchTimeout = null;
-      }
-
-      // Debounce: tunggu user selesai mengetik
-      fetchTimeout = setTimeout(() => {
+    // ===== FETCH NAMA TOKO (HANYA SAAT ENTER) =====
+    kodeInput.addEventListener('keydown', function(e) {
+      // Hanya jika tombol Enter ditekan
+      if (e.key === 'Enter') {
+        e.preventDefault(); // Mencegah submit form jika ada
+        const kode = this.value.trim();
+        if (!kode) {
+          namaInput.value = '';
+          namaInput.className = '';
+          return;
+        }
+        // Panggil pencarian
         fetchNamaToko(kode);
-      }, DEBOUNCE_DELAY);
-    }
+      }
+    });
 
+    // ===== FUNGSI FETCH NAMA TOKO =====
     async function fetchNamaToko(kode) {
       if (isFetching) return;
       isFetching = true;
@@ -384,9 +385,12 @@
       // Tampilkan overlay loading
       overlay.classList.add('active');
 
-      // Set status loading di input nama
+      // Ubah status input nama
       namaInput.value = '🔍 Mencari...';
       namaInput.className = 'loading';
+
+      // Hilangkan hasil submit sebelumnya (agar tidak tabrakan)
+      resultDiv.style.display = 'none';
 
       try {
         const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kode)}`;
@@ -409,26 +413,14 @@
       } finally {
         isFetching = false;
         overlay.classList.remove('active');
-        fetchTimeout = null;
       }
     }
 
-    // ===== EVENT LISTENER UNTUK KODE TOKO =====
-    kodeInput.addEventListener('input', function(e) {
-      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      triggerFetchNamaToko();
-    });
-
-    // Juga panggil saat kehilangan fokus (untuk jaga-jaga)
-    kodeInput.addEventListener('blur', function() {
-      if (this.value.trim() && !isFetching && !fetchTimeout) {
-        // Jika belum ada fetch yang tertunda, langsung cari
-        triggerFetchNamaToko();
-      }
-    });
-
-    // ===== SUBMIT REQUEST =====
+    // ===== SUBMIT REQUEST OTP =====
     async function submitRequest() {
+      // Cegah jika sedang loading atau submit
+      if (isFetching || isSubmitting) return;
+
       const email = emailInput.value.trim();
       const kode = kodeInput.value.trim();
       const role = roleSelect.value;
@@ -443,13 +435,14 @@
         showResult('Masukkan kode toko', 'error');
         return;
       }
-      if (nama === '❌ Kode toko tidak terdaftar' || nama.includes('Gagal') || nama.includes('Error')) {
+      if (nama === '❌ Kode toko tidak terdaftar' || nama.includes('Gagal') || nama.includes('Error') || nama === '') {
         showResult('Kode toko tidak valid, periksa kembali', 'error');
         return;
       }
 
       // Sembunyikan hasil sebelumnya
       resultDiv.style.display = 'none';
+      isSubmitting = true;
       submitBtn.disabled = true;
       submitBtn.textContent = 'Memproses...';
 
@@ -471,7 +464,7 @@
 
         if (result.success) {
           showResult(result.message, 'success');
-          // Reset field
+          // Reset field (email tidak direset)
           kodeInput.value = '';
           namaInput.value = '';
           namaInput.className = '';
@@ -484,6 +477,7 @@
         console.error('submitRequest error:', error);
         showResult('Gagal mengirim permintaan: ' + error.message, 'error');
       } finally {
+        isSubmitting = false;
         submitBtn.disabled = false;
         submitBtn.textContent = 'Request OTP';
       }
@@ -496,24 +490,25 @@
     }
 
     // ===== INISIALISASI =====
-    // Auto-capitalize kode toko (sudah di event input)
-    // Default approval note
-    toggleApprovalNote();
-
-    // Optional: tekan Enter di email/kode untuk submit
-    document.querySelectorAll('input').forEach(inp => {
-      inp.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (this.id === 'kodeToko' && this.value.trim()) {
-            // jika kode sudah ada, langsung submit
-            submitRequest();
-          } else if (this.id === 'email' && emailInput.value.trim()) {
-            submitRequest();
-          }
-        }
-      });
+    // Biarkan kode toko tetap uppercase tanpa spasi
+    kodeInput.addEventListener('input', function() {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      // Jika user menghapus semua, reset field nama
+      if (this.value === '') {
+        namaInput.value = '';
+        namaInput.className = '';
+      }
     });
+
+    // Tombol Enter di field email juga bisa memicu submit
+    emailInput.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        submitRequest();
+      }
+    });
+
+    // Klik di luar tidak memicu apapun, sesuai permintaan
   </script>
 </body>
 </html>
