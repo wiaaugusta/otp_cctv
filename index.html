@@ -2,175 +2,289 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Form OTP CCTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OTP CCTV</title>
   <link rel="manifest" href="/otp_cctv/manifest.json">
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
     body {
-      background-color: #f5f7fa;
-      color: #333;
-      line-height: 1.6;
-      padding: 16px;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
     }
-    .container {
-      max-width: 500px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      padding: 24px;
+
+    .card {
+      max-width: 480px;
+      width: 100%;
+      background: #ffffff;
+      border-radius: 28px;
+      box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15), 0 8px 24px -6px rgba(0,0,0,0.05);
+      overflow: hidden;
+      transition: all 0.2s ease;
     }
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 24px;
-      font-weight: 600;
+
+    /* HEADER */
+    .card-header {
+      background: linear-gradient(145deg, #1a2a3a, #0f1a26);
+      padding: 28px 24px 20px;
+      border-bottom: 4px solid #4a90d9;
     }
+
+    .card-header h1 {
+      color: #ffffff;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: 0.3px;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-header h1 small {
+      font-size: 14px;
+      font-weight: 300;
+      color: #94a8b8;
+      margin-left: auto;
+      letter-spacing: 0.2px;
+    }
+
+    .card-body {
+      padding: 28px 24px 32px;
+    }
+
     .form-group {
       margin-bottom: 20px;
     }
+
     label {
       display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
+      font-size: 13px;
+      font-weight: 600;
       color: #2c3e50;
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      opacity: 0.7;
     }
+
     input, select {
       width: 100%;
-      padding: 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
+      padding: 14px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
       font-size: 16px;
-      transition: border-color 0.3s;
+      background: #f9fafc;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      color: #1e293b;
+      font-weight: 500;
     }
+
     input:focus, select:focus {
       outline: none;
-      border-color: #3498db;
-      box-shadow: 0 0 0 2px rgba(52,152,219,0.2);
+      border-color: #4a90d9;
+      box-shadow: 0 0 0 4px rgba(74,144,217,0.15);
+      background: #ffffff;
     }
+
     input[readonly] {
-      background-color: #f8f9fa;
-      color: #6c757d;
+      background: #f1f5f9;
+      color: #475569;
+      cursor: default;
     }
-    button {
-      width: 100%;
-      padding: 14px;
-      background-color: #3498db;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.3s;
+
+    input::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
     }
-    button:hover {
-      background-color: #2980b9;
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
     }
-    button:disabled {
-      background-color: #bdc3c7;
-      cursor: not-allowed;
-    }
-    #result {
-      margin-top: 20px;
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
-      font-weight: 500;
-      word-wrap: break-word;
-      transition: all 0.3s ease;
-      font-size: 15px;
-      line-height: 1.5;
-      display: none;
-    }
-    .success {
-      background-color: #d4edda;
-      color: #155724;
-      border: 1px solid #c3e6cb;
-    }
-    .error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border: 1px solid #f5c6cb;
-    }
-    .info {
-      background-color: #d1ecf1;
-      color: #0c5460;
-      border: 1px solid #bee5eb;
-    }
-    .loader {
-      display: none;
-      text-align: center;
-      margin: 15px 0;
-    }
-    .loader-spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: 0 auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+
     .approval-note {
       display: none;
-      background-color: #fff3cd;
-      color: #856404;
-      padding: 12px;
-      border-radius: 8px;
-      margin-top: 15px;
-      border: 1px solid #ffeeba;
+      background: #fff8e7;
+      border-left: 4px solid #f5a623;
+      padding: 14px 16px;
+      border-radius: 10px;
       font-size: 14px;
+      color: #7a5d1a;
+      margin-top: 6px;
       line-height: 1.5;
     }
-    @media (max-width: 600px) {
-      body { padding: 12px; }
-      .container { padding: 18px; border-radius: 10px; }
-      h2 { font-size: 18px; margin-bottom: 20px; }
-      input, select { padding: 12px; font-size: 15px; }
-      button { padding: 12px; font-size: 15px; }
-      #result { font-size: 14px; padding: 10px; }
+
+    .approval-note strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px;
+      background: #1a2a3a;
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      letter-spacing: 0.3px;
+      margin-top: 8px;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #0f1a26;
+      box-shadow: 0 8px 20px -8px rgba(26,42,58,0.3);
+    }
+
+    .btn-primary:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-primary:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    #result {
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-weight: 500;
+      display: none;
+      font-size: 15px;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .success {
+      background: #e6f7e6;
+      color: #1e7e34;
+      border: 1px solid #b8e0b8;
+    }
+
+    .error {
+      background: #fee9e7;
+      color: #b3362a;
+      border: 1px solid #f5cdc9;
+    }
+
+    .info {
+      background: #e1f0fa;
+      color: #1a5a8c;
+      border: 1px solid #b8d4eb;
+    }
+
+    /* LOADING OVERLAY */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.35);
+      backdrop-filter: blur(3px);
+      z-index: 999;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .overlay-box {
+      background: white;
+      padding: 36px 40px 40px;
+      border-radius: 32px;
+      text-align: center;
+      box-shadow: 0 40px 60px -20px rgba(0,0,0,0.4);
+      max-width: 320px;
+      width: 90%;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 5px solid #e2e8f0;
+      border-top-color: #1a2a3a;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .overlay-box p {
+      font-size: 18px;
+      font-weight: 500;
+      color: #1e293b;
+      margin: 0;
+    }
+
+    .overlay-box small {
+      font-size: 14px;
+      color: #64748b;
+    }
+
+    /* Responsive */
+    @media (max-width: 500px) {
+      .card { border-radius: 20px; }
+      .card-header { padding: 20px 16px 16px; }
+      .card-header h1 { font-size: 18px; }
+      .card-body { padding: 20px 16px 24px; }
+      input, select, .btn-primary { padding: 12px 14px; font-size: 15px; }
+      .overlay-box { padding: 28px 20px 30px; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Request OTP CCTV</h2>
 
+<div class="card">
+  <div class="card-header">
+    <h1>
+      🔐 OTP CCTV
+      <small>v2.0</small>
+    </h1>
+  </div>
+  <div class="card-body">
     <div class="form-group">
-      <label for="email">Email:</label>
-      <input type="email" id="email" placeholder="email@domain.com" autocomplete="email">
+      <label for="email">Email</label>
+      <input type="email" id="email" placeholder="nama@perusahaan.com" autocomplete="email">
     </div>
 
     <div class="form-group">
-      <label for="kodeToko">Kode Toko:</label>
-      <input 
-        type="text" 
-        id="kodeToko" 
-        placeholder="Masukkan kode toko"
-        onkeypress="if(event.key==='Enter'){ fetchNamaToko(); return false; }"
-        onblur="fetchNamaToko()"
-        oninput="this.value = this.value.toUpperCase()"
-      >
+      <label for="kodeToko">Kode Toko</label>
+      <input type="text" id="kodeToko" placeholder="Contoh: 2A01" 
+             oninput="this.value = this.value.toUpperCase()" 
+             onkeydown="if(event.key==='Enter'){ event.preventDefault(); fetchNamaToko(); }">
     </div>
 
     <div class="form-group">
-      <label for="namaToko">Nama Toko:</label>
-      <input type="text" id="namaToko" readonly>
+      <label for="namaToko">Nama Toko</label>
+      <input type="text" id="namaToko" readonly placeholder="Ketik kode toko di atas">
     </div>
 
     <div class="form-group">
-      <label for="role">Role:</label>
+      <label for="role">Role</label>
       <select id="role" onchange="toggleApprovalNote()">
         <option value="user">User</option>
         <option value="admin">Admin</option>
@@ -178,126 +292,187 @@
     </div>
 
     <div id="approvalNote" class="approval-note">
-      <strong>Perhatian:</strong> Permintaan OTP dengan role Admin memerlukan persetujuan atasan. OTP akan dikirim setelah disetujui.
+      <strong>⏳ Perlu Persetujuan</strong>
+      Role Admin membutuhkan approval dari Manager. OTP akan dikirim setelah disetujui.
     </div>
 
-    <button onclick="submitRequest()" id="submitBtn">Request OTP</button>
-
-    <div class="loader" id="loader">
-      <div class="loader-spinner"></div>
-      <p>Memproses permintaan...</p>
-    </div>
-
+    <button class="btn-primary" id="submitBtn" onclick="submitRequest()">Request OTP</button>
     <div id="result"></div>
   </div>
+</div>
 
-  <script>
-    // ================= KONFIGURASI =================
-    // GANTI DENGAN URL DEPLOYMENT WEB APP ANDA
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
-    // ===============================================
+<!-- OVERLAY LOADING -->
+<div class="overlay" id="loadingOverlay">
+  <div class="overlay-box">
+    <div class="spinner"></div>
+    <p>Mencari toko...</p>
+    <small>Mohon tunggu sebentar</small>
+  </div>
+</div>
 
-    function toggleApprovalNote() {
-      const role = document.getElementById("role").value;
-      const note = document.getElementById("approvalNote");
-      note.style.display = (role === "admin") ? "block" : "none";
-    }
+<script>
+  // ============ KONFIGURASI ============
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
+  // ======================================
 
-    async function fetchNamaToko() {
-      const kodeToko = document.getElementById("kodeToko").value.trim();
-      const namaTokoInput = document.getElementById("namaToko");
-      if (!kodeToko) {
-        namaTokoInput.value = "";
-        return;
-      }
+  const overlay = document.getElementById('loadingOverlay');
+  const kodeInput = document.getElementById('kodeToko');
+  const namaInput = document.getElementById('namaToko');
+  const emailInput = document.getElementById('email');
+  const roleSelect = document.getElementById('role');
+  const submitBtn = document.getElementById('submitBtn');
+  const resultDiv = document.getElementById('result');
 
-      namaTokoInput.value = "Mencari...";
+  // Tampilkan notifikasi approval jika admin
+  function toggleApprovalNote() {
+    const note = document.getElementById('approvalNote');
+    note.style.display = (roleSelect.value === 'admin') ? 'block' : 'none';
+  }
 
-      try {
-        const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kodeToko)}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const result = await response.json();
+  // Fungsi untuk menampilkan hasil
+  function showResult(msg, type) {
+    resultDiv.textContent = msg;
+    resultDiv.className = type;
+    resultDiv.style.display = 'block';
+  }
 
-        if (result.success) {
-          namaTokoInput.value = result.namaToko;
-        } else {
-          namaTokoInput.value = "Toko tidak ditemukan";
-        }
-      } catch (error) {
-        console.error("fetchNamaToko error:", error);
-        namaTokoInput.value = "Error: " + error.message;
-      }
-    }
-
-    async function submitRequest() {
-      const email = document.getElementById("email").value.trim();
-      const kodeToko = document.getElementById("kodeToko").value.trim();
-      const role = document.getElementById("role").value;
-      const namaToko = document.getElementById("namaToko").value;
-
-      // Validasi
-      if (!email || !kodeToko) {
-        showResult("Harap isi email dan kode toko", "error");
-        return;
-      }
-      if (namaToko === "Toko tidak ditemukan" || namaToko === "Error: Failed to fetch" || !namaToko) {
-        showResult("Kode toko tidak valid, periksa kembali", "error");
-        return;
-      }
-
-      // Sembunyikan hasil sebelumnya
-      document.getElementById("result").style.display = "none";
-      document.getElementById("loader").style.display = "block";
-      document.getElementById("submitBtn").disabled = true;
-
-      try {
-        const formData = new URLSearchParams();
-        formData.append("action", "requestOtp");
-        formData.append("email", email);
-        formData.append("kode", kodeToko);
-        formData.append("role", role);
-
-        const response = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: formData
-        });
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const result = await response.json();
-
-        if (result.success) {
-          showResult(result.message, "success");
-          // Reset field (kecuali email)
-          document.getElementById("kodeToko").value = "";
-          document.getElementById("namaToko").value = "";
-          document.getElementById("role").value = "user";
-          toggleApprovalNote();
-        } else {
-          showResult(result.message, "error");
-        }
-      } catch (error) {
-        console.error("submitRequest error:", error);
-        showResult("Error: " + error.message, "error");
-      } finally {
-        document.getElementById("loader").style.display = "none";
-        document.getElementById("submitBtn").disabled = false;
-      }
-    }
-
-    function showResult(message, type) {
-      const resultDiv = document.getElementById("result");
-      resultDiv.textContent = message;
-      resultDiv.className = type;
-      resultDiv.style.display = "block";
-    }
-
-    // Inisialisasi
-    document.addEventListener("DOMContentLoaded", function() {
-      toggleApprovalNote();
-      // Auto uppercase untuk kode toko (sudah di oninput)
+  // Fungsi untuk menonaktifkan semua input (saat loading)
+  function setFormDisabled(disabled) {
+    emailInput.disabled = disabled;
+    kodeInput.disabled = disabled;
+    roleSelect.disabled = disabled;
+    submitBtn.disabled = disabled;
+    // ubah tampilan
+    const fields = [emailInput, kodeInput, roleSelect];
+    fields.forEach(f => {
+      f.style.opacity = disabled ? '0.6' : '1';
     });
-  </script>
+  }
+
+  // ================== FETCH NAMA TOKO ==================
+  async function fetchNamaToko() {
+    const kode = kodeInput.value.trim();
+    if (!kode) {
+      namaInput.value = '';
+      return;
+    }
+
+    // Tampilkan overlay loading
+    overlay.classList.add('active');
+    setFormDisabled(true);
+    namaInput.value = '⏳ mencari...';
+
+    try {
+      // Timeout 5 detik
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+
+      const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kode)}`;
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (!response.ok) throw new Error('Gagal terhubung ke server');
+
+      const result = await response.json();
+
+      if (result.success) {
+        namaInput.value = result.namaToko;
+        showResult('', ''); // hilangkan pesan error sebelumnya
+      } else {
+        namaInput.value = '❌ Kode toko tidak terdaftar';
+        showResult('Kode toko tidak ditemukan, silakan periksa kembali.', 'error');
+      }
+    } catch (error) {
+      console.error('fetch error:', error);
+      if (error.name === 'AbortError') {
+        namaInput.value = '⏱️ Waktu habis, coba lagi';
+        showResult('Permintaan waktu habis, periksa koneksi atau coba lagi.', 'error');
+      } else {
+        namaInput.value = '⚠️ Gagal memuat';
+        showResult('Gagal mengambil data toko: ' + error.message, 'error');
+      }
+    } finally {
+      overlay.classList.remove('active');
+      setFormDisabled(false);
+      // fokus kembali ke kode
+      kodeInput.focus();
+    }
+  }
+
+  // ================== SUBMIT REQUEST OTP ==================
+  async function submitRequest() {
+    const email = emailInput.value.trim();
+    const kode = kodeInput.value.trim();
+    const role = roleSelect.value;
+    const nama = namaInput.value;
+
+    // Validasi
+    if (!email) {
+      showResult('Harap isi email terlebih dahulu.', 'error');
+      return;
+    }
+    if (!kode) {
+      showResult('Harap isi kode toko.', 'error');
+      return;
+    }
+    if (!nama || nama.includes('tidak terdaftar') || nama.includes('Gagal') || nama.includes('mencari')) {
+      showResult('Kode toko tidak valid, periksa kembali.', 'error');
+      return;
+    }
+
+    // Sembunyikan hasil sebelumnya
+    resultDiv.style.display = 'none';
+
+    // Tampilkan loading di tombol
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Memproses...';
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append('action', 'requestOtp');
+      formData.append('email', email);
+      formData.append('kode', kode);
+      formData.append('role', role);
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Gagal terhubung ke server');
+
+      const result = await response.json();
+
+      if (result.success) {
+        showResult('✅ ' + result.message, 'success');
+        // Reset field (kecuali email)
+        kodeInput.value = '';
+        namaInput.value = '';
+        roleSelect.value = 'user';
+        toggleApprovalNote();
+        // Kosongkan email? biarkan saja
+      } else {
+        showResult('❌ ' + result.message, 'error');
+      }
+    } catch (error) {
+      console.error('submit error:', error);
+      showResult('Terjadi kesalahan: ' + error.message, 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Request OTP';
+    }
+  }
+
+  // Event: ketika kode diubah (blur) otomatis cari
+  kodeInput.addEventListener('blur', function() {
+    if (this.value.trim()) {
+      fetchNamaToko();
+    }
+  });
+
+  // Inisialisasi
+  toggleApprovalNote();
+</script>
 </body>
 </html>
