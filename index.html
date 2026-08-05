@@ -367,6 +367,7 @@
     kodeInputFinal.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
+        this.blur();
         const kode = this.value.trim();
         if (!kode) {
           namaInput.value = '';
