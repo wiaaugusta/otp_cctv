@@ -333,250 +333,280 @@
     </div>
   </div>
 
-  <script>
-    // ===== KONFIGURASI =====
-    const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
-    const FETCH_TIMEOUT = 8000; // 8 detik
-    const MIN_REQUEST_INTERVAL = 1500; // 1.5 detik antar request (untuk menghindari rate limit)
+ <script>
+  // ===== KONFIGURASI =====
+  const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
+  const FETCH_TIMEOUT = 8000;
+  const MIN_REQUEST_INTERVAL = 1500;
+  const EMAIL_STORAGE_KEY = 'otp_cctv_emails';
 
-    // ===== CACHE =====
-    const cache = new Map(); // key: kode toko, value: { success, namaToko, message }
+  // ===== CACHE =====
+  const cache = new Map();
 
-    // ===== ELEMEN =====
-    const kodeInput = document.getElementById('kodeToko');
-    const namaInput = document.getElementById('namaToko');
-    const emailInput = document.getElementById('email');
-    const roleSelect = document.getElementById('role');
-    const resultDiv = document.getElementById('result');
-    const submitBtn = document.getElementById('submitBtn');
-    const overlay = document.getElementById('loadingOverlay');
-    const loadingText = document.getElementById('loadingText');
-    const loadingSub = document.getElementById('loadingSub');
-    const approvalNote = document.getElementById('approvalNote');
+  // ===== ELEMEN =====
+  const kodeInput = document.getElementById('kodeToko');
+  const namaInput = document.getElementById('namaToko');
+  const emailInput = document.getElementById('email');
+  const roleSelect = document.getElementById('role');
+  const resultDiv = document.getElementById('result');
+  const submitBtn = document.getElementById('submitBtn');
+  const overlay = document.getElementById('loadingOverlay');
+  const loadingText = document.getElementById('loadingText');
+  const loadingSub = document.getElementById('loadingSub');
+  const approvalNote = document.getElementById('approvalNote');
 
-    let isFetching = false;
-    let isSubmitting = false;
-    let lastRequestTime = 0;
+  let isFetching = false;
+  let isSubmitting = false;
+  let lastRequestTime = 0;
 
-    // ===== HAPUS EVENT LISTENER LAMA (clone) =====
-    const newKodeInput = kodeInput.cloneNode(true);
-    kodeInput.parentNode.replaceChild(newKodeInput, kodeInput);
-    const kodeInputFinal = newKodeInput;
+  // ===== EMAIL HISTORY =====
+  function getEmailHistory() {
+    try {
+      const data = localStorage.getItem(EMAIL_STORAGE_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch { return []; }
+  }
 
-    // ===== EVENT HANYA ENTER =====
-    kodeInputFinal.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        this.blur();
-        const kode = this.value.trim();
-        if (!kode) {
-          namaInput.value = '';
-          namaInput.className = '';
-          return;
-        }
-        if (!isFetching) {
-          fetchNamaToko(kode);
-        }
-      }
-    });
+  function saveEmailHistory(emails) {
+    localStorage.setItem(EMAIL_STORAGE_KEY, JSON.stringify(emails));
+  }
 
-    // ===== FETCH DENGAN CACHE & THROTTLE =====
-    async function fetchNamaToko(kode, retryCount = 0) {
-      if (isFetching) return;
-      const kodeUpper = kode.toUpperCase().trim();
+  function addEmailToHistory(email) {
+    if (!email) return;
+    let emails = getEmailHistory();
+    emails = emails.filter(e => e.toLowerCase() !== email.toLowerCase());
+    emails.unshift(email);
+    if (emails.length > 10) emails = emails.slice(0, 10);
+    saveEmailHistory(emails);
+    updateEmailDatalist();
+  }
 
-      // Cek cache
-      if (cache.has(kodeUpper)) {
-        const cached = cache.get(kodeUpper);
-        if (cached.success) {
-          namaInput.value = cached.namaToko;
-          namaInput.className = 'success';
-        } else {
-          namaInput.value = '❌ ' + (cached.message || 'Kode toko tidak terdaftar');
-          namaInput.className = 'error';
-        }
-        return;
-      }
-
-      // Throttle: pastikan jeda antar request minimal 1.5 detik
-      const now = Date.now();
-      const timeSinceLast = now - lastRequestTime;
-      if (timeSinceLast < MIN_REQUEST_INTERVAL && lastRequestTime > 0) {
-        const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
-        loadingText.textContent = 'Menunggu jeda...';
-        loadingSub.textContent = `Tunggu ${(waitTime/1000).toFixed(1)} detik`;
-        overlay.classList.add('active');
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        overlay.classList.remove('active');
-      }
-
-      isFetching = true;
-      lastRequestTime = Date.now();
-
-      // Tampilkan overlay
-      overlay.classList.add('active');
-      loadingText.textContent = 'Mencari toko...';
-      loadingSub.textContent = 'Harap tunggu sebentar';
-
-      namaInput.value = '🔍 Mencari...';
-      namaInput.className = 'loading';
-      resultDiv.style.display = 'none';
-
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-
-        const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kodeUpper)}`;
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const result = await response.json();
-
-        // Simpan di cache
-        cache.set(kodeUpper, result);
-
-        if (result.success) {
-          namaInput.value = result.namaToko;
-          namaInput.className = 'success';
-        } else {
-          namaInput.value = '❌ ' + (result.message || 'Kode toko tidak terdaftar');
-          namaInput.className = 'error';
-        }
-      } catch (error) {
-        console.error('fetchNamaToko error:', error);
-
-        let errorMsg = '';
-        if (error.name === 'AbortError') {
-          errorMsg = '⏱️ Koneksi timeout, coba lagi';
-          // Retry dengan backoff
-          if (retryCount < 2) {
-            loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
-            await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
-            await fetchNamaToko(kode, retryCount + 1);
-            return;
-          }
-        } else if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
-          errorMsg = '⚠️ Gagal terhubung ke server';
-          // Jika retry < 2, coba lagi
-          if (retryCount < 2) {
-            loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
-            await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
-            await fetchNamaToko(kode, retryCount + 1);
-            return;
-          }
-        } else {
-          errorMsg = '⚠️ Error: ' + error.message;
-        }
-
-        // Simpan error di cache agar tidak request ulang
-        cache.set(kodeUpper, { success: false, message: errorMsg });
-        namaInput.value = errorMsg;
-        namaInput.className = 'error';
-      } finally {
-        isFetching = false;
-        overlay.classList.remove('active');
-      }
+  function updateEmailDatalist() {
+    const emails = getEmailHistory();
+    const datalist = document.getElementById('emailHistory');
+    if (datalist) {
+      datalist.innerHTML = emails.map(e => `<option value="${e}">`).join('');
     }
+  }
+  updateEmailDatalist();
 
-    // ===== SUBMIT REQUEST OTP =====
-    async function submitRequest() {
-      if (isFetching || isSubmitting) return;
+  // ===== HAPUS EVENT LISTENER LAMA (clone) =====
+  const newKodeInput = kodeInput.cloneNode(true);
+  kodeInput.parentNode.replaceChild(newKodeInput, kodeInput);
+  const kodeInputFinal = newKodeInput;
 
-      const email = emailInput.value.trim();
-      const kode = kodeInputFinal.value.trim();
-      const role = roleSelect.value;
-      const nama = namaInput.value;
-
-      if (!email) {
-        showResult('Masukkan email terdaftar', 'error');
-        return;
-      }
+  // ===== EVENT HANYA ENTER =====
+  kodeInputFinal.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const kode = this.value.trim();
       if (!kode) {
-        showResult('Masukkan kode toko', 'error');
-        return;
-      }
-      if (nama === '' || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout')) {
-        showResult('Kode toko tidak valid, periksa kembali', 'error');
-        return;
-      }
-
-      resultDiv.style.display = 'none';
-      isSubmitting = true;
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Memproses...';
-
-      try {
-        const formData = new URLSearchParams();
-        formData.append('action', 'requestOtp');
-        formData.append('email', email);
-        formData.append('kode', kode);
-        formData.append('role', role);
-
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: formData
-        });
-
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        const result = await response.json();
-
-        if (result.success) {
-          showResult(result.message, 'success');
-          // Reset field
-          kodeInputFinal.value = '';
-          namaInput.value = '';
-          namaInput.className = '';
-          roleSelect.value = 'user';
-          toggleApprovalNote();
-        } else {
-          showResult(result.message, 'error');
-        }
-      } catch (error) {
-        console.error('submitRequest error:', error);
-        showResult('Gagal mengirim permintaan: ' + error.message, 'error');
-      } finally {
-        isSubmitting = false;
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Request OTP';
-      }
-    }
-
-    function showResult(message, type) {
-      resultDiv.textContent = message;
-      resultDiv.className = type;
-      resultDiv.style.display = 'block';
-    }
-
-    // ===== TOGGLE APPROVAL NOTE =====
-    function toggleApprovalNote() {
-      approvalNote.classList.toggle('show', roleSelect.value === 'admin');
-    }
-    roleSelect.addEventListener('change', toggleApprovalNote);
-    toggleApprovalNote();
-
-    // ===== INPUT KODE (hanya uppercase) =====
-    kodeInputFinal.addEventListener('input', function() {
-      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      if (this.value === '') {
         namaInput.value = '';
         namaInput.className = '';
+        return;
       }
-    });
-
-    // ===== ENTER DI EMAIL UNTUK SUBMIT =====
-    emailInput.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        submitRequest();
+      if (!isFetching) {
+        fetchNamaToko(kode);
+        this.blur(); // Sembunyikan keyboard di mobile
       }
-    });
+    }
+  });
 
-    console.log('✅ Aplikasi siap dengan cache dan throttle.');
-  </script>
+  // ===== FETCH DENGAN CACHE & THROTTLE =====
+  async function fetchNamaToko(kode, retryCount = 0) {
+    // (Kode fetch sama dengan versi sebelumnya, tidak perlu diubah)
+    // Pastikan Anda sudah memiliki fungsi ini dari implementasi sebelumnya.
+    // Saya sertakan versi ringkasnya di bawah sebagai placeholder.
+    // Silakan gunakan kode fetch yang sudah Anda miliki.
+    if (isFetching) return;
+    const kodeUpper = kode.toUpperCase().trim();
+
+    if (cache.has(kodeUpper)) {
+      const cached = cache.get(kodeUpper);
+      if (cached.success) {
+        namaInput.value = cached.namaToko;
+        namaInput.className = 'success';
+      } else {
+        namaInput.value = '❌ ' + (cached.message || 'Kode toko tidak terdaftar');
+        namaInput.className = 'error';
+      }
+      return;
+    }
+
+    const now = Date.now();
+    const timeSinceLast = now - lastRequestTime;
+    if (timeSinceLast < MIN_REQUEST_INTERVAL && lastRequestTime > 0) {
+      const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
+      loadingText.textContent = 'Menunggu jeda...';
+      loadingSub.textContent = `Tunggu ${(waitTime/1000).toFixed(1)} detik`;
+      overlay.classList.add('active');
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      overlay.classList.remove('active');
+    }
+
+    isFetching = true;
+    lastRequestTime = Date.now();
+    overlay.classList.add('active');
+    loadingText.textContent = 'Mencari toko...';
+    loadingSub.textContent = 'Harap tunggu sebentar';
+    namaInput.value = '🔍 Mencari...';
+    namaInput.className = 'loading';
+    resultDiv.style.display = 'none';
+
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+      const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kodeUpper)}`;
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result = await response.json();
+      cache.set(kodeUpper, result);
+      if (result.success) {
+        namaInput.value = result.namaToko;
+        namaInput.className = 'success';
+      } else {
+        namaInput.value = '❌ ' + (result.message || 'Kode toko tidak terdaftar');
+        namaInput.className = 'error';
+      }
+    } catch (error) {
+      console.error('fetchNamaToko error:', error);
+      let errorMsg = '';
+      if (error.name === 'AbortError') {
+        errorMsg = '⏱️ Koneksi timeout, coba lagi';
+        if (retryCount < 2) {
+          loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
+          await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
+          await fetchNamaToko(kode, retryCount + 1);
+          return;
+        }
+      } else if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
+        errorMsg = '⚠️ Gagal terhubung ke server';
+        if (retryCount < 2) {
+          loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
+          await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
+          await fetchNamaToko(kode, retryCount + 1);
+          return;
+        }
+      } else {
+        errorMsg = '⚠️ Error: ' + error.message;
+      }
+      cache.set(kodeUpper, { success: false, message: errorMsg });
+      namaInput.value = errorMsg;
+      namaInput.className = 'error';
+    } finally {
+      isFetching = false;
+      overlay.classList.remove('active');
+    }
+  }
+
+  // ===== SUBMIT REQUEST OTP =====
+  async function submitRequest() {
+    if (isFetching || isSubmitting) return;
+
+    const email = emailInput.value.trim();
+    const kode = kodeInputFinal.value.trim();
+    const role = roleSelect.value;
+    const nama = namaInput.value;
+
+    if (!email) {
+      showResult('Masukkan email terdaftar', 'error');
+      return;
+    }
+    if (!kode) {
+      showResult('Masukkan kode toko', 'error');
+      return;
+    }
+    if (nama === '' || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout')) {
+      showResult('Kode toko tidak valid, periksa kembali', 'error');
+      return;
+    }
+
+    resultDiv.style.display = 'none';
+    isSubmitting = true;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Memproses...';
+
+    try {
+      const formData = new URLSearchParams();
+      formData.append('action', 'requestOtp');
+      formData.append('email', email);
+      formData.append('kode', kode);
+      formData.append('role', role);
+
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const result = await response.json();
+
+      if (result.success) {
+        showResult(result.message, 'success');
+        // Tambahkan email ke history
+        addEmailToHistory(email);
+        // Reset field
+        kodeInputFinal.value = '';
+        namaInput.value = '';
+        namaInput.className = '';
+        roleSelect.value = 'user';
+        toggleApprovalNote();
+        // Sembunyikan keyboard
+        document.activeElement?.blur();
+      } else {
+        showResult(result.message, 'error');
+      }
+    } catch (error) {
+      console.error('submitRequest error:', error);
+      showResult('Gagal mengirim permintaan: ' + error.message, 'error');
+    } finally {
+      isSubmitting = false;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Request OTP';
+    }
+  }
+
+  function showResult(message, type) {
+    resultDiv.textContent = message;
+    resultDiv.className = type;
+    resultDiv.style.display = 'block';
+  }
+
+  // ===== TOGGLE APPROVAL NOTE =====
+  function toggleApprovalNote() {
+    approvalNote.classList.toggle('show', roleSelect.value === 'admin');
+  }
+  roleSelect.addEventListener('change', toggleApprovalNote);
+  toggleApprovalNote();
+
+  // ===== INPUT KODE (hanya uppercase) =====
+  kodeInputFinal.addEventListener('input', function() {
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (this.value === '') {
+      namaInput.value = '';
+      namaInput.className = '';
+    }
+  });
+
+  // ===== ENTER DI EMAIL UNTUK SUBMIT =====
+  emailInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      submitRequest();
+      this.blur();
+    }
+  });
+
+  // ===== KLIK DI LUAR INPUT UNTUK SEMBUNYIKAN KEYBOARD =====
+  document.addEventListener('click', function(e) {
+    if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT' && e.target.tagName !== 'BUTTON') {
+      document.activeElement?.blur();
+    }
+  });
+
+  console.log('✅ Aplikasi siap dengan cache, throttle, dan email history.');
+</script>
 </body>
 </html>
