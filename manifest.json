@@ -6,7 +6,7 @@
   "start_url": "/otp_cctv/",
   "scope": "/otp_cctv/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#0b2a4a",
   "theme_color": "#1976d2",
   "orientation": "portrait",
   "icons": [
