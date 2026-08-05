@@ -472,11 +472,22 @@
   const EMAIL_STORAGE_KEY = 'otp_cctv_emails';
 
   // ===== SPLASH SCREEN =====
-  document.addEventListener('DOMContentLoaded', function() {
-    setTimeout(function() {
-      document.getElementById('splash').classList.add('hidden');
-    }, 1800); // 1.8 detik – sesuaikan jika mau
-  });
+document.addEventListener('DOMContentLoaded', function() {
+  // Cek apakah splash sudah ditampilkan di sesi ini
+  if (sessionStorage.getItem('splashShown')) {
+    // Jika sudah, langsung sembunyikan (tanpa animasi)
+    document.getElementById('splash').style.display = 'none';
+    return;
+  }
+  
+  // Tandai bahwa splash sudah ditampilkan
+  sessionStorage.setItem('splashShown', 'true');
+  
+  // Tampilkan splash, lalu hilangkan setelah 1.8 detik
+  setTimeout(function() {
+    document.getElementById('splash').classList.add('hidden');
+  }, 2000);
+});
 
   // ===== CACHE =====
   const cache = new Map();
