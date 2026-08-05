@@ -471,23 +471,28 @@
   const MIN_REQUEST_INTERVAL = 1500;
   const EMAIL_STORAGE_KEY = 'otp_cctv_emails';
 
-  // ===== SPLASH SCREEN =====
-document.addEventListener('DOMContentLoaded', function() {
+  // ===== SPLASH SCREEN (Eksekusi Cepat) =====
+(function() {
+  var splash = document.getElementById('splash');
+  if (!splash) return;
+
   // Cek apakah splash sudah ditampilkan di sesi ini
   if (sessionStorage.getItem('splashShown')) {
-    // Jika sudah, langsung sembunyikan (tanpa animasi)
-    document.getElementById('splash').style.display = 'none';
+    splash.style.display = 'none';
     return;
   }
-  
+
   // Tandai bahwa splash sudah ditampilkan
   sessionStorage.setItem('splashShown', 'true');
-  
-  // Tampilkan splash, lalu hilangkan setelah 1.8 detik
+
+  // Tampilkan splash (sudah tampil secara default, tapi pastikan)
+  splash.style.display = 'flex';
+
+  // Sembunyikan setelah 1.5 detik (lebih cepat dari 2 detik)
   setTimeout(function() {
-    document.getElementById('splash').classList.add('hidden');
-  }, 2000);
-});
+    splash.classList.add('hidden');
+  }, 2000); // 1.5 detik
+})();
 
   // ===== CACHE =====
   const cache = new Map();
