@@ -2,155 +2,139 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>OTP CCTV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OTP CCTV - Request</title>
   <link rel="manifest" href="/otp_cctv/manifest.json">
   <style>
     * {
-      box-sizing: border-box;
       margin: 0;
       padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
     }
 
     body {
-      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
-      background: #f0f4f8;
       min-height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
+      background: linear-gradient(145deg, #f0f4f8 0%, #d9e2ec 100%);
       padding: 20px;
-      margin: 0;
     }
 
     .card {
-      max-width: 480px;
+      max-width: 520px;
       width: 100%;
       background: #ffffff;
-      border-radius: 28px;
-      box-shadow: 0 20px 40px -12px rgba(0,0,0,0.15), 0 8px 24px -6px rgba(0,0,0,0.05);
+      border-radius: 32px;
+      box-shadow: 0 20px 60px rgba(0, 20, 40, 0.15), 0 8px 24px rgba(0, 0, 0, 0.05);
       overflow: hidden;
-      transition: all 0.2s ease;
+      transition: all 0.2s;
     }
 
-    /* HEADER */
     .card-header {
-      background: linear-gradient(145deg, #1a2a3a, #0f1a26);
-      padding: 28px 24px 20px;
-      border-bottom: 4px solid #4a90d9;
+      background: linear-gradient(135deg, #0b2a4a 0%, #1a4b6d 100%);
+      padding: 28px 32px 20px;
+      text-align: center;
+      border-bottom: 4px solid #4fc3f7;
     }
 
     .card-header h1 {
-      color: #ffffff;
-      font-weight: 500;
-      font-size: 22px;
-      letter-spacing: 0.3px;
+      color: #fff;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
       margin: 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
-    .card-header h1 small {
-      font-size: 14px;
-      font-weight: 300;
-      color: #94a8b8;
-      margin-left: auto;
-      letter-spacing: 0.2px;
+    .card-header .subtitle {
+      color: #b0d4f0;
+      font-size: 13px;
+      font-weight: 400;
+      margin-top: 4px;
+      letter-spacing: 0.3px;
     }
 
     .card-body {
-      padding: 28px 24px 32px;
+      padding: 32px 28px 28px;
     }
 
     .form-group {
-      margin-bottom: 20px;
+      margin-bottom: 22px;
     }
 
-    label {
+    .form-group label {
       display: block;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
-      color: #2c3e50;
+      color: #1e3b5a;
       margin-bottom: 6px;
       letter-spacing: 0.3px;
-      text-transform: uppercase;
-      opacity: 0.7;
     }
 
-    input, select {
+    .form-group input,
+    .form-group select {
       width: 100%;
       padding: 14px 16px;
-      border: 1.5px solid #e2e8f0;
+      border: 1.5px solid #dce4ec;
       border-radius: 14px;
       font-size: 16px;
-      background: #f9fafc;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-      color: #1e293b;
-      font-weight: 500;
-    }
-
-    input:focus, select:focus {
+      background-color: #f9fbfd;
+      transition: border-color 0.2s, box-shadow 0.2s;
       outline: none;
-      border-color: #4a90d9;
-      box-shadow: 0 0 0 4px rgba(74,144,217,0.15);
-      background: #ffffff;
+      color: #1a2b3c;
     }
 
-    input[readonly] {
-      background: #f1f5f9;
-      color: #475569;
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: #1a6b9e;
+      box-shadow: 0 0 0 4px rgba(26, 107, 158, 0.12);
+      background-color: #ffffff;
+    }
+
+    .form-group input[readonly] {
+      background-color: #f0f4f8;
+      color: #2c3e50;
       cursor: default;
     }
 
-    input::placeholder {
-      color: #94a3b8;
-      font-weight: 400;
+    .form-group input[readonly].loading {
+      background-color: #eef3f7;
+      color: #6b7f94;
+      font-style: italic;
     }
 
-    select {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 16px center;
-      padding-right: 40px;
+    .form-group input[readonly].error {
+      background-color: #fde8e8;
+      color: #b33c3c;
+      border-color: #f5c6cb;
     }
 
-    .approval-note {
-      display: none;
-      background: #fff8e7;
-      border-left: 4px solid #f5a623;
-      padding: 14px 16px;
-      border-radius: 10px;
-      font-size: 14px;
-      color: #7a5d1a;
-      margin-top: 6px;
-      line-height: 1.5;
-    }
-
-    .approval-note strong {
-      display: block;
-      margin-bottom: 4px;
+    .form-group input[readonly].success {
+      background-color: #e3f0e8;
+      color: #1d6b3e;
+      border-color: #b8d9c4;
     }
 
     .btn-primary {
       width: 100%;
       padding: 16px;
-      background: #1a2a3a;
-      color: white;
+      background: linear-gradient(135deg, #1a5a8a 0%, #0e3b5e 100%);
       border: none;
       border-radius: 16px;
-      font-size: 18px;
+      color: white;
+      font-size: 17px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-      letter-spacing: 0.3px;
-      margin-top: 8px;
+      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px rgba(10, 55, 94, 0.25);
+      letter-spacing: 0.5px;
     }
 
     .btn-primary:hover:not(:disabled) {
-      background: #0f1a26;
-      box-shadow: 0 8px 20px -8px rgba(26,42,58,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(10, 55, 94, 0.35);
     }
 
     .btn-primary:active:not(:disabled) {
@@ -158,51 +142,49 @@
     }
 
     .btn-primary:disabled {
-      background: #94a3b8;
+      opacity: 0.6;
       cursor: not-allowed;
-      opacity: 0.7;
+      box-shadow: none;
     }
 
     #result {
       margin-top: 20px;
       padding: 14px 16px;
       border-radius: 14px;
-      font-weight: 500;
-      display: none;
       font-size: 15px;
+      font-weight: 500;
       line-height: 1.5;
+      display: none;
       word-break: break-word;
     }
 
-    .success {
-      background: #e6f7e6;
-      color: #1e7e34;
-      border: 1px solid #b8e0b8;
+    #result.success {
+      display: block;
+      background: #e3f0e8;
+      color: #1a5c3a;
+      border: 1px solid #b8d9c4;
     }
 
-    .error {
-      background: #fee9e7;
-      color: #b3362a;
-      border: 1px solid #f5cdc9;
+    #result.error {
+      display: block;
+      background: #fde8e8;
+      color: #a13131;
+      border: 1px solid #f5c6cb;
     }
 
-    .info {
-      background: #e1f0fa;
-      color: #1a5a8c;
-      border: 1px solid #b8d4eb;
-    }
-
-    /* LOADING OVERLAY */
+    /* Overlay loading */
     .overlay {
-      display: none;
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.35);
-      backdrop-filter: blur(3px);
-      z-index: 999;
-      justify-content: center;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.35);
+      backdrop-filter: blur(4px);
+      display: none;
       align-items: center;
-      flex-direction: column;
+      justify-content: center;
+      z-index: 9999;
     }
 
     .overlay.active {
@@ -211,268 +193,327 @@
 
     .overlay-box {
       background: white;
-      padding: 36px 40px 40px;
-      border-radius: 32px;
+      padding: 32px 40px;
+      border-radius: 24px;
       text-align: center;
-      box-shadow: 0 40px 60px -20px rgba(0,0,0,0.4);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.3);
       max-width: 320px;
       width: 90%;
     }
 
-    .spinner {
+    .overlay-box .spinner {
+      border: 4px solid #e6edf4;
+      border-top: 4px solid #1a6b9e;
+      border-radius: 50%;
       width: 48px;
       height: 48px;
-      border: 5px solid #e2e8f0;
-      border-top-color: #1a2a3a;
-      border-radius: 50%;
-      animation: spin 0.9s linear infinite;
+      animation: spin 0.8s linear infinite;
       margin: 0 auto 16px;
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     .overlay-box p {
-      font-size: 18px;
+      color: #1a2b3c;
+      font-size: 16px;
       font-weight: 500;
-      color: #1e293b;
       margin: 0;
     }
 
-    .overlay-box small {
+    .overlay-box .sub {
+      color: #5f7a94;
       font-size: 14px;
-      color: #64748b;
+      font-weight: 400;
+      margin-top: 4px;
+    }
+
+    /* Approval note */
+    .approval-note {
+      background: #fef9e6;
+      border-left: 4px solid #f5b342;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #7a6200;
+      margin: -8px 0 18px 0;
+      display: none;
+    }
+
+    .approval-note.show {
+      display: block;
+    }
+
+    .note-icon {
+      margin-right: 6px;
     }
 
     /* Responsive */
-    @media (max-width: 500px) {
-      .card { border-radius: 20px; }
-      .card-header { padding: 20px 16px 16px; }
-      .card-header h1 { font-size: 18px; }
-      .card-body { padding: 20px 16px 24px; }
-      input, select, .btn-primary { padding: 12px 14px; font-size: 15px; }
-      .overlay-box { padding: 28px 20px 30px; }
+    @media (max-width: 600px) {
+      .card-header {
+        padding: 20px 20px 16px;
+      }
+      .card-header h1 {
+        font-size: 20px;
+      }
+      .card-body {
+        padding: 24px 18px 22px;
+      }
+      .form-group input,
+      .form-group select {
+        padding: 12px 14px;
+        font-size: 15px;
+      }
+      .btn-primary {
+        padding: 14px;
+        font-size: 16px;
+      }
     }
   </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="card-header">
-    <h1>
-      🔐 OTP CCTV
-      <small>v2.0</small>
-    </h1>
+  <!-- OVERLAY LOADING -->
+  <div class="overlay" id="loadingOverlay">
+    <div class="overlay-box">
+      <div class="spinner"></div>
+      <p>Mencari toko...</p>
+      <div class="sub">Harap tunggu sebentar</div>
+    </div>
   </div>
-  <div class="card-body">
-    <div class="form-group">
-      <label for="email">Email</label>
-      <input type="email" id="email" placeholder="nama@perusahaan.com" autocomplete="email">
+
+  <!-- CARD -->
+  <div class="card">
+    <div class="card-header">
+      <h1>🔐 Request OTP CCTV</h1>
+      <div class="subtitle">Akses aman &amp; terkendali</div>
     </div>
 
-    <div class="form-group">
-      <label for="kodeToko">Kode Toko</label>
-      <input type="text" id="kodeToko" placeholder="Contoh: 2A01" 
-             oninput="this.value = this.value.toUpperCase()" 
-             onkeydown="if(event.key==='Enter'){ event.preventDefault(); fetchNamaToko(); }">
-    </div>
+    <div class="card-body">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="email@perusahaan.com" autocomplete="email">
+      </div>
 
-    <div class="form-group">
-      <label for="namaToko">Nama Toko</label>
-      <input type="text" id="namaToko" readonly placeholder="Ketik kode toko di atas">
-    </div>
+      <div class="form-group">
+        <label for="kodeToko">Kode Toko</label>
+        <input 
+          type="text" 
+          id="kodeToko" 
+          placeholder="Contoh: 2A01"
+          autocomplete="off"
+          maxlength="10"
+        >
+      </div>
 
-    <div class="form-group">
-      <label for="role">Role</label>
-      <select id="role" onchange="toggleApprovalNote()">
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </select>
-    </div>
+      <div class="form-group">
+        <label for="namaToko">Nama Toko</label>
+        <input type="text" id="namaToko" readonly placeholder="Ketik kode toko di atas">
+      </div>
 
-    <div id="approvalNote" class="approval-note">
-      <strong>⏳ Perlu Persetujuan</strong>
-      Role Admin membutuhkan approval dari Manager. OTP akan dikirim setelah disetujui.
-    </div>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role">
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+      </div>
 
-    <button class="btn-primary" id="submitBtn" onclick="submitRequest()">Request OTP</button>
-    <div id="result"></div>
+      <div id="approvalNote" class="approval-note">
+        <span class="note-icon">⏳</span> Permintaan dengan role <strong>Admin</strong> memerlukan persetujuan atasan. OTP akan dikirim setelah disetujui.
+      </div>
+
+      <button class="btn-primary" id="submitBtn" onclick="submitRequest()">Request OTP</button>
+
+      <div id="result"></div>
+    </div>
   </div>
-</div>
 
-<!-- OVERLAY LOADING -->
-<div class="overlay" id="loadingOverlay">
-  <div class="overlay-box">
-    <div class="spinner"></div>
-    <p>Mencari toko...</p>
-    <small>Mohon tunggu sebentar</small>
-  </div>
-</div>
+  <script>
+    // ===== KONFIGURASI =====
+    const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
+    const DEBOUNCE_DELAY = 400; // ms
 
-<script>
-  // ============ KONFIGURASI ============
-  const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
-  // ======================================
+    // ===== ELEMEN =====
+    const kodeInput = document.getElementById('kodeToko');
+    const namaInput = document.getElementById('namaToko');
+    const emailInput = document.getElementById('email');
+    const roleSelect = document.getElementById('role');
+    const resultDiv = document.getElementById('result');
+    const submitBtn = document.getElementById('submitBtn');
+    const overlay = document.getElementById('loadingOverlay');
+    const approvalNote = document.getElementById('approvalNote');
 
-  const overlay = document.getElementById('loadingOverlay');
-  const kodeInput = document.getElementById('kodeToko');
-  const namaInput = document.getElementById('namaToko');
-  const emailInput = document.getElementById('email');
-  const roleSelect = document.getElementById('role');
-  const submitBtn = document.getElementById('submitBtn');
-  const resultDiv = document.getElementById('result');
+    let fetchTimeout = null;
+    let isFetching = false;
 
-  // Tampilkan notifikasi approval jika admin
-  function toggleApprovalNote() {
-    const note = document.getElementById('approvalNote');
-    note.style.display = (roleSelect.value === 'admin') ? 'block' : 'none';
-  }
-
-  // Fungsi untuk menampilkan hasil
-  function showResult(msg, type) {
-    resultDiv.textContent = msg;
-    resultDiv.className = type;
-    resultDiv.style.display = 'block';
-  }
-
-  // Fungsi untuk menonaktifkan semua input (saat loading)
-  function setFormDisabled(disabled) {
-    emailInput.disabled = disabled;
-    kodeInput.disabled = disabled;
-    roleSelect.disabled = disabled;
-    submitBtn.disabled = disabled;
-    // ubah tampilan
-    const fields = [emailInput, kodeInput, roleSelect];
-    fields.forEach(f => {
-      f.style.opacity = disabled ? '0.6' : '1';
-    });
-  }
-
-  // ================== FETCH NAMA TOKO ==================
-  async function fetchNamaToko() {
-    const kode = kodeInput.value.trim();
-    if (!kode) {
-      namaInput.value = '';
-      return;
+    // ===== FUNGSI TOGGLE APPROVAL NOTE =====
+    function toggleApprovalNote() {
+      approvalNote.classList.toggle('show', roleSelect.value === 'admin');
     }
+    roleSelect.addEventListener('change', toggleApprovalNote);
+    toggleApprovalNote();
 
-    // Tampilkan overlay loading
-    overlay.classList.add('active');
-    setFormDisabled(true);
-    namaInput.value = '⏳ mencari...';
-
-    try {
-      // Timeout 5 detik
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-
-      const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kode)}`;
-      const response = await fetch(url, { signal: controller.signal });
-      clearTimeout(timeout);
-
-      if (!response.ok) throw new Error('Gagal terhubung ke server');
-
-      const result = await response.json();
-
-      if (result.success) {
-        namaInput.value = result.namaToko;
-        showResult('', ''); // hilangkan pesan error sebelumnya
-      } else {
-        namaInput.value = '❌ Kode toko tidak terdaftar';
-        showResult('Kode toko tidak ditemukan, silakan periksa kembali.', 'error');
-      }
-    } catch (error) {
-      console.error('fetch error:', error);
-      if (error.name === 'AbortError') {
-        namaInput.value = '⏱️ Waktu habis, coba lagi';
-        showResult('Permintaan waktu habis, periksa koneksi atau coba lagi.', 'error');
-      } else {
-        namaInput.value = '⚠️ Gagal memuat';
-        showResult('Gagal mengambil data toko: ' + error.message, 'error');
-      }
-    } finally {
-      overlay.classList.remove('active');
-      setFormDisabled(false);
-      // fokus kembali ke kode
-      kodeInput.focus();
-    }
-  }
-
-  // ================== SUBMIT REQUEST OTP ==================
-  async function submitRequest() {
-    const email = emailInput.value.trim();
-    const kode = kodeInput.value.trim();
-    const role = roleSelect.value;
-    const nama = namaInput.value;
-
-    // Validasi
-    if (!email) {
-      showResult('Harap isi email terlebih dahulu.', 'error');
-      return;
-    }
-    if (!kode) {
-      showResult('Harap isi kode toko.', 'error');
-      return;
-    }
-    if (!nama || nama.includes('tidak terdaftar') || nama.includes('Gagal') || nama.includes('mencari')) {
-      showResult('Kode toko tidak valid, periksa kembali.', 'error');
-      return;
-    }
-
-    // Sembunyikan hasil sebelumnya
-    resultDiv.style.display = 'none';
-
-    // Tampilkan loading di tombol
-    submitBtn.disabled = true;
-    submitBtn.textContent = '⏳ Memproses...';
-
-    try {
-      const formData = new URLSearchParams();
-      formData.append('action', 'requestOtp');
-      formData.append('email', email);
-      formData.append('kode', kode);
-      formData.append('role', role);
-
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
-      });
-
-      if (!response.ok) throw new Error('Gagal terhubung ke server');
-
-      const result = await response.json();
-
-      if (result.success) {
-        showResult('✅ ' + result.message, 'success');
-        // Reset field (kecuali email)
-        kodeInput.value = '';
+    // ===== FETCH NAMA TOKO (dengan debounce) =====
+    function triggerFetchNamaToko() {
+      const kode = kodeInput.value.trim();
+      if (!kode) {
         namaInput.value = '';
-        roleSelect.value = 'user';
-        toggleApprovalNote();
-        // Kosongkan email? biarkan saja
-      } else {
-        showResult('❌ ' + result.message, 'error');
+        namaInput.className = '';
+        return;
       }
-    } catch (error) {
-      console.error('submit error:', error);
-      showResult('Terjadi kesalahan: ' + error.message, 'error');
-    } finally {
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Request OTP';
-    }
-  }
 
-  // Event: ketika kode diubah (blur) otomatis cari
-  kodeInput.addEventListener('blur', function() {
-    if (this.value.trim()) {
-      fetchNamaToko();
-    }
-  });
+      // Hapus timeout sebelumnya
+      if (fetchTimeout) {
+        clearTimeout(fetchTimeout);
+        fetchTimeout = null;
+      }
 
-  // Inisialisasi
-  toggleApprovalNote();
-</script>
+      // Debounce: tunggu user selesai mengetik
+      fetchTimeout = setTimeout(() => {
+        fetchNamaToko(kode);
+      }, DEBOUNCE_DELAY);
+    }
+
+    async function fetchNamaToko(kode) {
+      if (isFetching) return;
+      isFetching = true;
+
+      // Tampilkan overlay loading
+      overlay.classList.add('active');
+
+      // Set status loading di input nama
+      namaInput.value = '🔍 Mencari...';
+      namaInput.className = 'loading';
+
+      try {
+        const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kode)}`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const result = await response.json();
+
+        if (result.success) {
+          namaInput.value = result.namaToko;
+          namaInput.className = 'success';
+        } else {
+          namaInput.value = '❌ Kode toko tidak terdaftar';
+          namaInput.className = 'error';
+        }
+      } catch (error) {
+        console.error('fetchNamaToko error:', error);
+        namaInput.value = '⚠️ Gagal terhubung ke server';
+        namaInput.className = 'error';
+      } finally {
+        isFetching = false;
+        overlay.classList.remove('active');
+        fetchTimeout = null;
+      }
+    }
+
+    // ===== EVENT LISTENER UNTUK KODE TOKO =====
+    kodeInput.addEventListener('input', function(e) {
+      this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      triggerFetchNamaToko();
+    });
+
+    // Juga panggil saat kehilangan fokus (untuk jaga-jaga)
+    kodeInput.addEventListener('blur', function() {
+      if (this.value.trim() && !isFetching && !fetchTimeout) {
+        // Jika belum ada fetch yang tertunda, langsung cari
+        triggerFetchNamaToko();
+      }
+    });
+
+    // ===== SUBMIT REQUEST =====
+    async function submitRequest() {
+      const email = emailInput.value.trim();
+      const kode = kodeInput.value.trim();
+      const role = roleSelect.value;
+      const nama = namaInput.value;
+
+      // Validasi
+      if (!email) {
+        showResult('Masukkan email terdaftar', 'error');
+        return;
+      }
+      if (!kode) {
+        showResult('Masukkan kode toko', 'error');
+        return;
+      }
+      if (nama === '❌ Kode toko tidak terdaftar' || nama.includes('Gagal') || nama.includes('Error')) {
+        showResult('Kode toko tidak valid, periksa kembali', 'error');
+        return;
+      }
+
+      // Sembunyikan hasil sebelumnya
+      resultDiv.style.display = 'none';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Memproses...';
+
+      try {
+        const formData = new URLSearchParams();
+        formData.append('action', 'requestOtp');
+        formData.append('email', email);
+        formData.append('kode', kode);
+        formData.append('role', role);
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const result = await response.json();
+
+        if (result.success) {
+          showResult(result.message, 'success');
+          // Reset field
+          kodeInput.value = '';
+          namaInput.value = '';
+          namaInput.className = '';
+          roleSelect.value = 'user';
+          toggleApprovalNote();
+        } else {
+          showResult(result.message, 'error');
+        }
+      } catch (error) {
+        console.error('submitRequest error:', error);
+        showResult('Gagal mengirim permintaan: ' + error.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Request OTP';
+      }
+    }
+
+    function showResult(message, type) {
+      resultDiv.textContent = message;
+      resultDiv.className = type;
+      resultDiv.style.display = 'block';
+    }
+
+    // ===== INISIALISASI =====
+    // Auto-capitalize kode toko (sudah di event input)
+    // Default approval note
+    toggleApprovalNote();
+
+    // Optional: tekan Enter di email/kode untuk submit
+    document.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (this.id === 'kodeToko' && this.value.trim()) {
+            // jika kode sudah ada, langsung submit
+            submitRequest();
+          } else if (this.id === 'email' && emailInput.value.trim()) {
+            submitRequest();
+          }
+        }
+      });
+    });
+  </script>
 </body>
 </html>
