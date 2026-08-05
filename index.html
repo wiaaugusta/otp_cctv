@@ -6,11 +6,12 @@
   <title>OTP CCTV - Request</title>
   <link rel="manifest" href="/otp_cctv/manifest.json">
   <style>
+    /* ===== DESAIN PROFESIONAL (SAMA) ===== */
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
     }
 
     body {
@@ -29,7 +30,6 @@
       border-radius: 32px;
       box-shadow: 0 20px 60px rgba(0, 20, 40, 0.15), 0 8px 24px rgba(0, 0, 0, 0.05);
       overflow: hidden;
-      transition: all 0.2s;
     }
 
     .card-header {
@@ -244,11 +244,6 @@
       display: block;
     }
 
-    .note-icon {
-      margin-right: 6px;
-    }
-
-    /* hint kecil */
     .hint {
       font-size: 12px;
       color: #7a8fa0;
@@ -284,8 +279,8 @@
   <div class="overlay" id="loadingOverlay">
     <div class="overlay-box">
       <div class="spinner"></div>
-      <p>Mencari toko...</p>
-      <div class="sub">Harap tunggu sebentar</div>
+      <p id="loadingText">Mencari toko...</p>
+      <div class="sub" id="loadingSub">Harap tunggu sebentar</div>
     </div>
   </div>
 
@@ -340,6 +335,11 @@
   <script>
     // ===== KONFIGURASI =====
     const API_URL = 'https://script.google.com/macros/s/AKfycbxVOWR6fi2s-CdSVRmPJnnFOQn3q-_fTfYj8yEVhggjOTrZZUt-s1cxjcJpz_ttO7w/exec';
+    const FETCH_TIMEOUT = 8000; // 8 detik
+    const MIN_REQUEST_INTERVAL = 1500; // 1.5 detik antar request (untuk menghindari rate limit)
+
+    // ===== CACHE =====
+    const cache = new Map(); // key: kode toko, value: { success, namaToko, message }
 
     // ===== ELEMEN =====
     const kodeInput = document.getElementById('kodeToko');
@@ -349,66 +349,130 @@
     const resultDiv = document.getElementById('result');
     const submitBtn = document.getElementById('submitBtn');
     const overlay = document.getElementById('loadingOverlay');
+    const loadingText = document.getElementById('loadingText');
+    const loadingSub = document.getElementById('loadingSub');
     const approvalNote = document.getElementById('approvalNote');
 
     let isFetching = false;
     let isSubmitting = false;
+    let lastRequestTime = 0;
 
-    // ===== TOGGLE APPROVAL NOTE =====
-    function toggleApprovalNote() {
-      approvalNote.classList.toggle('show', roleSelect.value === 'admin');
-    }
-    roleSelect.addEventListener('change', toggleApprovalNote);
-    toggleApprovalNote();
+    // ===== HAPUS EVENT LISTENER LAMA (clone) =====
+    const newKodeInput = kodeInput.cloneNode(true);
+    kodeInput.parentNode.replaceChild(newKodeInput, kodeInput);
+    const kodeInputFinal = newKodeInput;
 
-    // ===== FETCH NAMA TOKO (HANYA SAAT ENTER) =====
-    kodeInput.addEventListener('keydown', function(e) {
-      // Hanya jika tombol Enter ditekan
+    // ===== EVENT HANYA ENTER =====
+    kodeInputFinal.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
-        e.preventDefault(); // Mencegah submit form jika ada
+        e.preventDefault();
         const kode = this.value.trim();
         if (!kode) {
           namaInput.value = '';
           namaInput.className = '';
           return;
         }
-        // Panggil pencarian
-        fetchNamaToko(kode);
+        if (!isFetching) {
+          fetchNamaToko(kode);
+        }
       }
     });
 
-    // ===== FUNGSI FETCH NAMA TOKO =====
-    async function fetchNamaToko(kode) {
+    // ===== FETCH DENGAN CACHE & THROTTLE =====
+    async function fetchNamaToko(kode, retryCount = 0) {
       if (isFetching) return;
+      const kodeUpper = kode.toUpperCase().trim();
+
+      // Cek cache
+      if (cache.has(kodeUpper)) {
+        const cached = cache.get(kodeUpper);
+        if (cached.success) {
+          namaInput.value = cached.namaToko;
+          namaInput.className = 'success';
+        } else {
+          namaInput.value = '❌ ' + (cached.message || 'Kode toko tidak terdaftar');
+          namaInput.className = 'error';
+        }
+        return;
+      }
+
+      // Throttle: pastikan jeda antar request minimal 1.5 detik
+      const now = Date.now();
+      const timeSinceLast = now - lastRequestTime;
+      if (timeSinceLast < MIN_REQUEST_INTERVAL && lastRequestTime > 0) {
+        const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
+        loadingText.textContent = 'Menunggu jeda...';
+        loadingSub.textContent = `Tunggu ${(waitTime/1000).toFixed(1)} detik`;
+        overlay.classList.add('active');
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        overlay.classList.remove('active');
+      }
+
       isFetching = true;
+      lastRequestTime = Date.now();
 
-      // Tampilkan overlay loading
+      // Tampilkan overlay
       overlay.classList.add('active');
+      loadingText.textContent = 'Mencari toko...';
+      loadingSub.textContent = 'Harap tunggu sebentar';
 
-      // Ubah status input nama
       namaInput.value = '🔍 Mencari...';
       namaInput.className = 'loading';
-
-      // Hilangkan hasil submit sebelumnya (agar tidak tabrakan)
       resultDiv.style.display = 'none';
 
       try {
-        const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kode)}`;
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+
+        const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kodeUpper)}`;
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
 
         const result = await response.json();
+
+        // Simpan di cache
+        cache.set(kodeUpper, result);
 
         if (result.success) {
           namaInput.value = result.namaToko;
           namaInput.className = 'success';
         } else {
-          namaInput.value = '❌ Kode toko tidak terdaftar';
+          namaInput.value = '❌ ' + (result.message || 'Kode toko tidak terdaftar');
           namaInput.className = 'error';
         }
       } catch (error) {
         console.error('fetchNamaToko error:', error);
-        namaInput.value = '⚠️ Gagal terhubung ke server';
+
+        let errorMsg = '';
+        if (error.name === 'AbortError') {
+          errorMsg = '⏱️ Koneksi timeout, coba lagi';
+          // Retry dengan backoff
+          if (retryCount < 2) {
+            loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
+            await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
+            await fetchNamaToko(kode, retryCount + 1);
+            return;
+          }
+        } else if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
+          errorMsg = '⚠️ Gagal terhubung ke server';
+          // Jika retry < 2, coba lagi
+          if (retryCount < 2) {
+            loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
+            await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
+            await fetchNamaToko(kode, retryCount + 1);
+            return;
+          }
+        } else {
+          errorMsg = '⚠️ Error: ' + error.message;
+        }
+
+        // Simpan error di cache agar tidak request ulang
+        cache.set(kodeUpper, { success: false, message: errorMsg });
+        namaInput.value = errorMsg;
         namaInput.className = 'error';
       } finally {
         isFetching = false;
@@ -418,15 +482,13 @@
 
     // ===== SUBMIT REQUEST OTP =====
     async function submitRequest() {
-      // Cegah jika sedang loading atau submit
       if (isFetching || isSubmitting) return;
 
       const email = emailInput.value.trim();
-      const kode = kodeInput.value.trim();
+      const kode = kodeInputFinal.value.trim();
       const role = roleSelect.value;
       const nama = namaInput.value;
 
-      // Validasi
       if (!email) {
         showResult('Masukkan email terdaftar', 'error');
         return;
@@ -435,12 +497,11 @@
         showResult('Masukkan kode toko', 'error');
         return;
       }
-      if (nama === '❌ Kode toko tidak terdaftar' || nama.includes('Gagal') || nama.includes('Error') || nama === '') {
+      if (nama === '' || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout')) {
         showResult('Kode toko tidak valid, periksa kembali', 'error');
         return;
       }
 
-      // Sembunyikan hasil sebelumnya
       resultDiv.style.display = 'none';
       isSubmitting = true;
       submitBtn.disabled = true;
@@ -464,8 +525,8 @@
 
         if (result.success) {
           showResult(result.message, 'success');
-          // Reset field (email tidak direset)
-          kodeInput.value = '';
+          // Reset field
+          kodeInputFinal.value = '';
           namaInput.value = '';
           namaInput.className = '';
           roleSelect.value = 'user';
@@ -489,18 +550,23 @@
       resultDiv.style.display = 'block';
     }
 
-    // ===== INISIALISASI =====
-    // Biarkan kode toko tetap uppercase tanpa spasi
-    kodeInput.addEventListener('input', function() {
+    // ===== TOGGLE APPROVAL NOTE =====
+    function toggleApprovalNote() {
+      approvalNote.classList.toggle('show', roleSelect.value === 'admin');
+    }
+    roleSelect.addEventListener('change', toggleApprovalNote);
+    toggleApprovalNote();
+
+    // ===== INPUT KODE (hanya uppercase) =====
+    kodeInputFinal.addEventListener('input', function() {
       this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      // Jika user menghapus semua, reset field nama
       if (this.value === '') {
         namaInput.value = '';
         namaInput.className = '';
       }
     });
 
-    // Tombol Enter di field email juga bisa memicu submit
+    // ===== ENTER DI EMAIL UNTUK SUBMIT =====
     emailInput.addEventListener('keydown', function(e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -508,7 +574,7 @@
       }
     });
 
-    // Klik di luar tidak memicu apapun, sesuai permintaan
+    console.log('✅ Aplikasi siap dengan cache dan throttle.');
   </script>
 </body>
 </html>
