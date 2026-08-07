@@ -755,6 +755,44 @@
   });
 }
 
+   // ===== FOTO & PREVIEW =====
+let fotoBase64 = ''; // simpan base64 foto untuk dikirim saat submit
+
+document.getElementById('ambilFotoBtn').addEventListener('click', function() {
+  // Gunakan input file dengan capture kamera (hanya kamera, tidak bisa upload)
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.capture = 'environment'; // kamera belakang
+  input.style.display = 'none';
+
+  input.onchange = function(e) {
+    const file = e.target.files[0];
+    if (!file) {
+      document.getElementById('statusFoto').textContent = '❌ Tidak ada foto';
+      return;
+    }
+
+    // Baca file sebagai base64
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      // Tampilkan preview
+      const imgPreview = document.getElementById('imgPreview');
+      imgPreview.src = ev.target.result;
+      document.getElementById('previewFoto').style.display = 'block';
+      document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
+
+      // Simpan base64 (tanpa header data:image/jpeg;base64,)
+      fotoBase64 = ev.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+  };
+
+  document.body.appendChild(input);
+  input.click();
+  input.remove();
+});
+
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
   if (isFetching || isSubmitting) return;
