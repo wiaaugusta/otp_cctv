@@ -862,9 +862,9 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
 
         // Gambar background (semi-transparan dengan blur efek)
         ctx.save();
-        ctx.shadowColor = 'rgba(0,0,0,0.5)';
-        ctx.shadowBlur = 10;
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.shadowColor = 'rgba(0,0,0,0.15)';
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = 'rgba(255,255,255,0.22)';
         ctx.shadowBlur = 0; // matikan shadow untuk background agar tidak terlalu blur
         // Buat rounded rectangle
         const radius = 8;
@@ -883,14 +883,14 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         ctx.fill();
 
         // Tambahkan border tipis agar lebih elegan
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.35)';
         ctx.lineWidth = 1;
         ctx.stroke();
 
         // Gambar teks
-        ctx.shadowColor = 'rgba(0,0,0,0.8)';
-        ctx.shadowBlur = 4;
-        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = ''transparent'';
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = '#2C3E50';
         ctx.font = `bold ${fontSize}px 'Segoe UI', Roboto, sans-serif`;
 
         lines.forEach((line, index) => {
