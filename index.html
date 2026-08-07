@@ -841,8 +841,8 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         const padding = fontSize * 0.6;
         const lineHeight = fontSize * 1.5;
         // ===== Ukuran Watermark =====
-        const logoWidth = fontSize * 4.5;
-        const logoHeight = fontSize * 1.3;
+        const logoWidth = Math.min(width * 0.25, 250);
+      const logoHeight = logoWidth * 0.28;
         
         const textWidth = Math.max(
             ctx.measureText(`${kodeToko} - ${namaToko}`).width,
@@ -892,7 +892,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         ctx.fillRect(x, y, 5, boxHeight);
         // ===== Logo Alfamart =====
         const logo = new Image();
-        logo.src = "alfamart.png";
+        logo.src = "Alfamart.png";
         
         await new Promise(resolve => {
             logo.onload = resolve;
