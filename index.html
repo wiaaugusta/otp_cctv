@@ -395,6 +395,23 @@
     height: 8px;
   }
 }
+  .btn-secondary {
+  background: #f0f4f8;
+  border: 1.5px solid #dce4ec;
+  border-radius: 14px;
+  padding: 12px 18px;
+  font-weight: 600;
+  color: #1e3b5a;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-secondary:hover {
+  background: #e3e9f0;
+}
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
     
   </style>
 </head>
@@ -448,6 +465,17 @@
         <label for="namaToko">Nama Toko</label>
         <input type="text" id="namaToko" readonly placeholder=" ">
       </div>
+
+      <div class="form-group">
+      <label for="foto">Foto Lokasi Toko <span style="color:red;">*</span></label>
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <button type="button" id="ambilFotoBtn" class="btn-secondary" style="padding:10px 20px; background:#e8edf2; border:1px solid #d0d7de; border-radius:10px; font-weight:500; cursor:pointer; color:#1e3b5a;">📸 Ambil Foto</button>
+        <span id="statusFoto" style="font-size:14px; color:#6b7f94;">Belum ada foto</span>
+      </div>
+      <div id="previewFoto" style="margin-top:10px; display:none; border-radius:12px; overflow:hidden; max-width:200px; border:2px solid #dce4ec;">
+        <img id="imgPreview" src="" alt="Preview Foto" style="width:100%; display:block;">
+      </div>
+    </div>
 
       <div class="form-group">
         <label for="role">Role</label>
@@ -749,21 +777,28 @@
     showResult('Kode toko tidak valid, periksa kembali', 'error');
     return;
   }
+  // **Validasi foto wajib**
+  if (!fotoBase64) {
+    showResult('Harap ambil foto lokasi toko terlebih dahulu', 'error');
+    return;
+  }
 
   // Sembunyikan hasil sebelumnya
   resultDiv.style.display = 'none';
   isSubmitting = true;
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Mengakses kamera & GPS...';
+  submitBtn.textContent = 'Mengambil lokasi & memproses...';
 
   try {
-    // Ambil foto dan lokasi (otomatis muncul izin)
-    const { fotoBase64, lat, lng } = await takePhotoAndLocation();
+    // Ambil GPS
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject);
+    });
+    const lat = pos.coords.latitude;
+    const lng = pos.coords.longitude;
 
-    // Update tombol
     submitBtn.textContent = 'Memproses...';
 
-    // Siapkan data untuk dikirim
     const formData = new URLSearchParams();
     formData.append('action', 'requestOtp');
     formData.append('email', email);
@@ -785,19 +820,26 @@
     if (result.success) {
       showResult(result.message, 'success');
       addEmailToHistory(email);
-      // Reset form
+      // Reset form (termasuk foto)
       kodeInputFinal.value = '';
       namaInput.value = '';
       namaInput.className = '';
       roleSelect.value = 'user';
       toggleApprovalNote();
+      // Reset foto
+      fotoBase64 = '';
+      document.getElementById('previewFoto').style.display = 'none';
+      document.getElementById('statusFoto').textContent = 'Belum ada foto';
+      document.getElementById('imgPreview').src = '';
       document.activeElement?.blur();
     } else {
       showResult(result.message, 'error');
     }
   } catch (error) {
     console.error('submitRequest error:', error);
-    showResult('Error: ' + error.message, 'error');
+    let msg = 'Gagal mendapatkan lokasi: ' + error.message;
+    if (error.code === 1) msg = 'Izin lokasi ditolak. Aktifkan GPS dan izinkan akses lokasi.';
+    showResult(msg, 'error');
   } finally {
     isSubmitting = false;
     submitBtn.disabled = false;
