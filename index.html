@@ -412,6 +412,17 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+  /* Untuk overlay submit, sama dengan sebelumnya */
+  #submitOverlay .overlay-box .icon-result {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+  #submitOverlay .overlay-box .result-message {
+    font-weight: 500;
+    font-size: 16px;
+    color: #1a2b3c;
+  }
     
   </style>
 </head>
@@ -494,6 +505,16 @@
       <div id="result"></div>
     </div>
   </div>
+  
+      <!-- OVERLAY LOADING UNTUK SUBMIT -->
+  <div class="overlay" id="submitOverlay">
+  <div class="overlay-box" id="submitOverlayBox">
+    <div class="spinner" id="submitSpinner"></div>
+    <p id="submitLoadingText">Memproses permintaan...</p>
+    <div class="sub" id="submitLoadingSub">Harap tunggu, jangan tutup halaman</div>
+    <!-- Akan diisi ikon sukses/gagal saat selesai -->
+  </div>
+</div>
 
  <script>
   // ===== KONFIGURASI =====
@@ -538,7 +559,7 @@
   const overlay = document.getElementById('loadingOverlay');
   const loadingText = document.getElementById('loadingText');
   const loadingSub = document.getElementById('loadingSub');
-  const approvalNote = document.getElementById('approvalNote');
+  const approvalNote = document.getElementById('approvalNote');   
 
   let isFetching = false;
   let isSubmitting = false;
@@ -795,6 +816,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
 
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
+  // Cegah jika sedang memproses
   if (isFetching || isSubmitting) return;
 
   const email = emailInput.value.trim();
@@ -815,17 +837,19 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     showResult('Kode toko tidak valid, periksa kembali', 'error');
     return;
   }
-  // **Validasi foto wajib**
   if (!fotoBase64) {
     showResult('Harap ambil foto lokasi toko terlebih dahulu', 'error');
     return;
   }
 
-  // Sembunyikan hasil sebelumnya
+  // Sembunyikan hasil sebelumnya di form
   resultDiv.style.display = 'none';
   isSubmitting = true;
   submitBtn.disabled = true;
-  submitBtn.textContent = 'Mengambil lokasi & memproses...';
+  submitBtn.textContent = 'Memproses...';
+
+  // Tampilkan popup loading (blur)
+  showLoading();
 
   try {
     // Ambil GPS
@@ -835,8 +859,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     const lat = pos.coords.latitude;
     const lng = pos.coords.longitude;
 
-    submitBtn.textContent = 'Memproses...';
-
+    // Kirim request
     const formData = new URLSearchParams();
     formData.append('action', 'requestOtp');
     formData.append('email', email);
@@ -855,28 +878,32 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const result = await response.json();
 
+    // Tutup loading, tampilkan hasil popup
     if (result.success) {
+      showResultPopup('✅', 'Berhasil!', result.message, true);
+      // Tampilkan juga di form
       showResult(result.message, 'success');
+      // Reset form
       addEmailToHistory(email);
-      // Reset form (termasuk foto)
       kodeInputFinal.value = '';
       namaInput.value = '';
       namaInput.className = '';
       roleSelect.value = 'user';
       toggleApprovalNote();
-      // Reset foto
       fotoBase64 = '';
       document.getElementById('previewFoto').style.display = 'none';
       document.getElementById('statusFoto').textContent = 'Belum ada foto';
       document.getElementById('imgPreview').src = '';
       document.activeElement?.blur();
     } else {
+      showResultPopup('❌', 'Gagal!', result.message, false);
       showResult(result.message, 'error');
     }
   } catch (error) {
     console.error('submitRequest error:', error);
     let msg = 'Gagal mendapatkan lokasi: ' + error.message;
     if (error.code === 1) msg = 'Izin lokasi ditolak. Aktifkan GPS dan izinkan akses lokasi.';
+    showResultPopup('❌', 'Error!', msg, false);
     showResult(msg, 'error');
   } finally {
     isSubmitting = false;
