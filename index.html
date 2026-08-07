@@ -840,9 +840,16 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         // Background blur semi-transparan
         const padding = fontSize * 0.6;
         const lineHeight = fontSize * 1.5;
-        // ===== Ukuran Watermark =====
-        const logoWidth = Math.min(width * 0.25, 250);
-      const logoHeight = logoWidth * 0.28;
+
+        // ===== Ukuran teks ALFAMART =====
+        const logoText = "ALFAMART";
+        
+        const logoFontSize = fontSize * 1.1;
+        
+        ctx.font = `bold ${logoFontSize}px Arial`;
+        
+        const logoWidth = ctx.measureText(logoText).width;
+        const logoHeight = logoFontSize;
         
         const textWidth = Math.max(
             ctx.measureText(`${kodeToko} - ${namaToko}`).width,
@@ -890,21 +897,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         
         ctx.fillStyle = redLine;
         ctx.fillRect(x, y, 5, boxHeight);
-        // ===== Logo Alfamart =====
-        const logo = new Image();
-        logo.src = "Alfamart.png";
         
-        await new Promise(resolve => {
-            logo.onload = resolve;
-        });
-        
-        ctx.drawImage(
-            logo,
-            x + 18,
-            y + 12,
-            logoWidth,
-            logoHeight
-        );
 
         // Gambar teks
         ctx.shadowColor = 'transparent';
@@ -914,6 +907,15 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
 
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
+
+        // ===== Teks ALFAMART =====
+        ctx.fillStyle = "#D71920";
+        ctx.font = `bold ${logoFontSize}px Arial`;
+        ctx.fillText(
+            "ALFAMART",
+            x + 18,
+            y + 12
+        );
         
         // ===========================
         // Baris kedua
