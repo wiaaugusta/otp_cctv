@@ -729,71 +729,81 @@
 
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
-    if (isFetching || isSubmitting) return;
+  if (isFetching || isSubmitting) return;
 
-    const email = emailInput.value.trim();
-    const kode = kodeInputFinal.value.trim();
-    const role = roleSelect.value;
-    const nama = namaInput.value;
+  const email = emailInput.value.trim();
+  const kode = kodeInputFinal.value.trim();
+  const role = roleSelect.value;
+  const nama = namaInput.value;
 
-    if (!email) {
-      showResult('Masukkan email terdaftar', 'error');
-      return;
-    }
-    if (!kode) {
-      showResult('Masukkan kode toko', 'error');
-      return;
-    }
-    if (nama === '' || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout')) {
-      showResult('Kode toko tidak valid, periksa kembali', 'error');
-      return;
-    }
+  // Validasi awal
+  if (!email) {
+    showResult('Masukkan email terdaftar', 'error');
+    return;
+  }
+  if (!kode) {
+    showResult('Masukkan kode toko', 'error');
+    return;
+  }
+  if (nama === '' || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout')) {
+    showResult('Kode toko tidak valid, periksa kembali', 'error');
+    return;
+  }
 
-    resultDiv.style.display = 'none';
-    isSubmitting = true;
-    submitBtn.disabled = true;
+  // Sembunyikan hasil sebelumnya
+  resultDiv.style.display = 'none';
+  isSubmitting = true;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Mengakses kamera & GPS...';
+
+  try {
+    // Ambil foto dan lokasi (otomatis muncul izin)
+    const { fotoBase64, lat, lng } = await takePhotoAndLocation();
+
+    // Update tombol
     submitBtn.textContent = 'Memproses...';
 
-    try {
-      const formData = new URLSearchParams();
-      formData.append('action', 'requestOtp');
-      formData.append('email', email);
-      formData.append('kode', kode);
-      formData.append('role', role);
+    // Siapkan data untuk dikirim
+    const formData = new URLSearchParams();
+    formData.append('action', 'requestOtp');
+    formData.append('email', email);
+    formData.append('kode', kode);
+    formData.append('role', role);
+    formData.append('foto', fotoBase64);
+    formData.append('lat', lat);
+    formData.append('lng', lng);
 
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: formData
-      });
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData
+    });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const result = await response.json();
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const result = await response.json();
 
-      if (result.success) {
-        showResult(result.message, 'success');
-        // Tambahkan email ke history
-        addEmailToHistory(email);
-        // Reset field
-        kodeInputFinal.value = '';
-        namaInput.value = '';
-        namaInput.className = '';
-        roleSelect.value = 'user';
-        toggleApprovalNote();
-        // Sembunyikan keyboard
-        document.activeElement?.blur();
-      } else {
-        showResult(result.message, 'error');
-      }
-    } catch (error) {
-      console.error('submitRequest error:', error);
-      showResult('Gagal mengirim permintaan: ' + error.message, 'error');
-    } finally {
-      isSubmitting = false;
-      submitBtn.disabled = false;
-      submitBtn.textContent = 'Request OTP';
+    if (result.success) {
+      showResult(result.message, 'success');
+      addEmailToHistory(email);
+      // Reset form
+      kodeInputFinal.value = '';
+      namaInput.value = '';
+      namaInput.className = '';
+      roleSelect.value = 'user';
+      toggleApprovalNote();
+      document.activeElement?.blur();
+    } else {
+      showResult(result.message, 'error');
     }
+  } catch (error) {
+    console.error('submitRequest error:', error);
+    showResult('Error: ' + error.message, 'error');
+  } finally {
+    isSubmitting = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Request OTP';
   }
+}
 
   function showResult(message, type) {
     resultDiv.textContent = message;
