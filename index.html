@@ -829,7 +829,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         const namaToko = document.getElementById('namaToko').value.trim() || 'Nama Toko';
         const now = new Date();
         const tanggal = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-        const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const jam = now.toLocaleTimeString('en-GB', {hour: '2-digit',minute: '2-digit',hour12: false});
 
         // Ukuran font relatif terhadap lebar gambar
         const fontSize = Math.max(12, width * 0.04);
