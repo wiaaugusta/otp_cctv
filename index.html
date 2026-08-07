@@ -803,7 +803,6 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         let width = img.width;
         let height = img.height;
 
-        // Hitung ukuran baru dengan mempertahankan rasio aspek
         if (width > height) {
           if (width > MAX_WIDTH) {
             height = Math.round(height * (MAX_WIDTH / width));
@@ -816,21 +815,98 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
           }
         }
 
-        // Buat canvas untuk resize
+        // === BUAT CANVAS ===
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
+
+        // Gambar foto
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Kualitas 0.6 menghasilkan file lebih kecil
+        // === TAMBAHKAN WATERMARK ===
+        const kodeToko = document.getElementById('kodeToko').value.trim() || 'NOCODE';
+        const namaToko = document.getElementById('namaToko').value.trim() || 'Nama Toko';
+        const now = new Date();
+        const tanggal = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+        const jam = now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+        // Ukuran font relatif terhadap lebar gambar
+        const fontSize = Math.max(12, width * 0.04);
+        ctx.font = `bold ${fontSize}px 'Segoe UI', Roboto, sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+
+        // Background blur semi-transparan
+        const padding = fontSize * 0.6;
+        const lineHeight = fontSize * 1.5;
+        const lines = [
+          `Alfamart`,
+          `${kodeToko} - ${namaToko}`,
+          `${tanggal}  ${jam}`
+        ];
+
+        // Ukur lebar teks terpanjang
+        let maxWidthText = 0;
+        lines.forEach(line => {
+          const metrics = ctx.measureText(line);
+          if (metrics.width > maxWidthText) maxWidthText = metrics.width;
+        });
+
+        const boxWidth = maxWidthText + (padding * 2);
+        const boxHeight = (lines.length * lineHeight) + (padding * 2);
+
+        // Posisi pojok kiri atas dengan jarak
+        const x = padding;
+        const y = padding;
+
+        // Gambar background (semi-transparan dengan blur efek)
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 10;
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+        ctx.shadowBlur = 0; // matikan shadow untuk background agar tidak terlalu blur
+        // Buat rounded rectangle
+        const radius = 8;
+        ctx.beginPath();
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + boxWidth - radius, y);
+        ctx.quadraticCurveTo(x + boxWidth, y, x + boxWidth, y + radius);
+        ctx.lineTo(x + boxWidth, y + boxHeight - radius);
+        ctx.quadraticCurveTo(x + boxWidth, y + boxHeight, x + boxWidth - radius, y + boxHeight);
+        ctx.lineTo(x + radius, y + boxHeight);
+        ctx.quadraticCurveTo(x, y + boxHeight, x, y + boxHeight - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+        ctx.fill();
+
+        // Tambahkan border tipis agar lebih elegan
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Gambar teks
+        ctx.shadowColor = 'rgba(0,0,0,0.8)';
+        ctx.shadowBlur = 4;
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${fontSize}px 'Segoe UI', Roboto, sans-serif`;
+
+        lines.forEach((line, index) => {
+          const textY = y + padding + (index * lineHeight);
+          ctx.fillText(line, x + padding, textY);
+        });
+
+        ctx.restore();
+
+        // === SIMPAN BASE64 ===
         const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
         const base64 = dataUrl.split(',')[1];
 
-        // Simpan base64 hasil resize
         fotoBase64 = base64;
 
-        // Tampilkan preview (dari hasil resize)
+        // Tampilkan preview
         document.getElementById('imgPreview').src = dataUrl;
         document.getElementById('previewFoto').style.display = 'block';
         document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
