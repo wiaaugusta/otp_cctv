@@ -950,6 +950,92 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     }
   });
 
+   // ===== FUNGSI UNTUK OVERLAY SUBMIT =====
+function showLoading() {
+  const overlay = document.getElementById('submitOverlay');
+  const box = document.getElementById('submitOverlayBox');
+  const spinner = document.getElementById('submitSpinner');
+  const text = document.getElementById('submitLoadingText');
+  const sub = document.getElementById('submitLoadingSub');
+
+  // Reset ke tampilan loading
+  spinner.style.display = 'block';
+  // Hapus ikon/pesan result jika ada
+  const oldIcon = box.querySelector('.icon-result');
+  if (oldIcon) oldIcon.remove();
+  const oldMsg = box.querySelector('.result-message');
+  if (oldMsg) oldMsg.remove();
+  // Hapus tombol close jika ada
+  const oldClose = box.querySelector('.close-btn');
+  if (oldClose) oldClose.remove();
+
+  text.textContent = 'Memproses permintaan...';
+  sub.textContent = 'Harap tunggu, jangan tutup halaman';
+  overlay.classList.add('active');
+}
+
+function showResultPopup(icon, title, message, isSuccess) {
+  const overlay = document.getElementById('submitOverlay');
+  const box = document.getElementById('submitOverlayBox');
+  const spinner = document.getElementById('submitSpinner');
+
+  // Sembunyikan spinner
+  spinner.style.display = 'none';
+
+  // Hapus konten lama (selain spinner)
+  const oldIcon = box.querySelector('.icon-result');
+  if (oldIcon) oldIcon.remove();
+  const oldMsg = box.querySelector('.result-message');
+  if (oldMsg) oldMsg.remove();
+  const oldClose = box.querySelector('.close-btn');
+  if (oldClose) oldClose.remove();
+
+  // Buat elemen ikon
+  const iconEl = document.createElement('div');
+  iconEl.className = 'icon-result';
+  iconEl.textContent = icon;
+
+  // Buat elemen pesan
+  const msgEl = document.createElement('div');
+  msgEl.className = 'result-message';
+  msgEl.innerHTML = `<strong>${title}</strong><br>${message}`;
+
+  // Tambahkan ke box
+  box.appendChild(iconEl);
+  box.appendChild(msgEl);
+
+  // Sembunyikan teks loading
+  document.getElementById('submitLoadingText').textContent = '';
+  document.getElementById('submitLoadingSub').textContent = '';
+
+  // Buat tombol close (X)
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'close-btn';
+  closeBtn.textContent = '✕';
+  closeBtn.style.cssText = `
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 4px 8px;
+    line-height: 1;
+  `;
+  closeBtn.onclick = function() {
+    overlay.classList.remove('active');
+  };
+  box.style.position = 'relative';
+  box.appendChild(closeBtn);
+
+  // Auto close setelah 5 detik
+  setTimeout(() => {
+    overlay.classList.remove('active');
+  }, 5000);
+}
+
   console.log('✅ Aplikasi siap dengan cache, throttle, dan email history.');
 </script>
 </body>
