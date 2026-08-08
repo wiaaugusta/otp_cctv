@@ -780,6 +780,21 @@
 let fotoBase64 = ''; // simpan base64 foto untuk dikirim saat submit
 
 document.getElementById('ambilFotoBtn').addEventListener('click', function() {
+  // ===== VALIDASI AWAL =====
+  const kode = document.getElementById('kodeToko').value.trim();
+  const nama = document.getElementById('namaToko').value.trim();
+
+  if (!kode) {
+    showResult('⚠️ Kode toko wajib diisi terlebih dahulu', 'error');
+    return; // Batalkan proses
+  }
+
+  if (!nama || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout') || nama === '') {
+    showResult('⚠️ Nama toko tidak valid. Pastikan kode toko sudah dicari (tekan Enter).', 'error');
+    return; // Batalkan proses
+  }
+
+  // ===== LANJUTKAN BUKA KAMERA =====
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
