@@ -3,9 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <!-- Untuk Chrome Android (splash screen) -->
   <meta name="theme-color" content="#0b2a4a">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">  
+  
+  <!-- Meta Tag untuk iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <!-- Ikon untuk iOS -->
+  <link rel="apple-touch-icon" href="/otp_cctv/icon-180.png">
+
+  <!-- PWACompat untuk Splash Screen iOS -->
+  <script async src="https://cdn.jsdelivr.net/npm/pwacompat@2.0.9/pwacompat.min.js"
+      integrity="sha384-pP3e3Y7yHskCx41qRw+8jKmUu9t7cFy4B0fXJfs4tJp2Wx06Ad4BrMRqz0gCq5m"
+      crossorigin="anonymous">
+  </script>
+  
   <title>OTP CCTV - Request</title>
   <link rel="manifest" href="/otp_cctv/manifest.json">
   <style>
