@@ -894,8 +894,8 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   // Garis merah bawah logo
   ctx.fillStyle = '#D71920';
 
-  const logoLineY = logoY + logoFontSize * 0.95;
-  const logoLineHeight = Math.max(2, fontSize * 0.10);
+  const logoLineY = logoY + logoFontSize * 0.65;
+  const logoLineHeight = Math.max(2, fontSize * 0.13);
 
   ctx.fillRect(
     logoX,
@@ -907,9 +907,9 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   // Informasi user
   ctx.fillStyle = '#111111';
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-  ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.65);
-  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.65);
-  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.65);
+  ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.75);
+  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.75);
+  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.75);
 
   ctx.restore();
 
