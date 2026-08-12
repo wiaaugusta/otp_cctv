@@ -735,10 +735,9 @@
   }
    
 // ===== FOTO & PREVIEW =====
-let fotoBase64 = ''; // simpan base64 foto untuk dikirim saat submit
+let fotoBase64 = '';
 
 document.getElementById('ambilFotoBtn').addEventListener('click', function() {
-  // ===== VALIDASI AWAL =====
   const kode = document.getElementById('kodeToko').value.trim();
   const nama = document.getElementById('namaToko').value.trim();
 
@@ -752,7 +751,6 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     return;
   }
 
-  // ===== BUKA KAMERA =====
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -770,7 +768,6 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     reader.onload = function(ev) {
       const img = new Image();
       img.onload = function() {
-        // === RESIZE GAMBAR (1024x768) ===
         const MAX_WIDTH = 1024;
         const MAX_HEIGHT = 768;
         let width = img.width;
@@ -783,36 +780,31 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         width = Math.round(width * ratio);
         height = Math.round(height * ratio);
 
-        // === BUAT CANVAS ===
         const canvas = document.createElement('canvas');
         canvas.width = width;
         canvas.height = height;
         const ctx = canvas.getContext('2d');
 
-        // Gambar foto
         ctx.drawImage(img, 0, 0, width, height);
 
-        // === AMBIL NAMA USER DARI APPS SCRIPT ===
         const emailUser = document.getElementById('email').value.trim() || 'User';
         const kodeToko = document.getElementById('kodeToko').value.trim() || 'NOCODE';
         const namaToko = document.getElementById('namaToko').value.trim() || 'Nama Toko';
 
-        // Panggil Apps Script untuk ambil nama user
-        google.script.run
-          .withSuccessHandler(function(userRes) {
+        // ===== FETCH NAMA USER (bukan google.script.run) =====
+        fetch(`${API_URL}?action=getNamaUser&email=${encodeURIComponent(emailUser)}`)
+          .then(response => response.json())
+          .then(userRes => {
             let namaUser = 'User';
             if (userRes && userRes.success && userRes.namaUser) {
               namaUser = userRes.namaUser;
             }
-            // Lanjutkan proses watermark dengan nama user
             tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser);
           })
-          .withFailureHandler(function(error) {
+          .catch(error => {
             console.error('Gagal ambil nama user:', error);
-            // Tetap lanjut dengan nama default
             tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, 'User', emailUser);
-          })
-          .getNamaUser(emailUser);
+          });
       };
       img.src = ev.target.result;
     };
