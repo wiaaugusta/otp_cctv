@@ -901,7 +901,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   ctx.restore();
 
   // === SIMPAN BASE64 ===
-  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.99);
   const base64 = dataUrl.split(',')[1];
 
   fotoBase64 = base64;
