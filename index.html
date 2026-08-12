@@ -867,9 +867,9 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   ctx.shadowBlur = 5;
 
   const gradient = ctx.createLinearGradient(x, y, x + boxWidth, y);
-  gradient.addColorStop(0, 'rgba(255,255,255,0.82)');
-  gradient.addColorStop(0.75, 'rgba(255,255,255,0.82)');
-  gradient.addColorStop(0.93, 'rgba(255,255,255,0.70)');
+  gradient.addColorStop(0, 'rgba(255,255,255,0.77)');
+  gradient.addColorStop(0.75, 'rgba(255,255,255,0.75)');
+  gradient.addColorStop(0.93, 'rgba(255,255,255,0.60)');
   gradient.addColorStop(1, 'rgba(255,255,255,0.25)');
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, boxWidth, boxHeight);
@@ -883,7 +883,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 
   // Logo ALFAMART
   const logoX = x + 18;
-  const logoY = y + padding + 4;
+  const logoY = y + padding + 6;
   ctx.fillStyle = '#0066B3';
   ctx.font = `bold ${logoFontSize}px Arial`;
   ctx.fillText('ALFA', logoX, logoY);
@@ -894,9 +894,9 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   // Informasi user
   ctx.fillStyle = '#111111';
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-  ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.65);
-  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.65);
-  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.65);
+  ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.75);
+  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.75);
+  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.75);
 
   ctx.restore();
 
