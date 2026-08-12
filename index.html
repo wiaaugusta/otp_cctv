@@ -871,8 +871,8 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   gradient.addColorStop(0.25, 'rgba(255,255,255,0.80)');
   gradient.addColorStop(0.50, 'rgba(255,255,255,0.78)');
   gradient.addColorStop(0.70, 'rgba(255,255,255,0.68)');
-  gradient.addColorStop(0.85, 'rgba(255,255,255,0.52)');
-  gradient.addColorStop(1.00, 'rgba(255,255,255,0.15)');
+  gradient.addColorStop(0.85, 'rgba(255,255,255,0.50)');
+  gradient.addColorStop(1.00, 'rgba(255,255,255,0.10)');
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, boxWidth, boxHeight);
 
@@ -885,7 +885,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 
   // Logo ALFAMART
   const logoX = x + 18;
-  const logoY = y + padding + 20;
+  const logoY = y + padding + 15;
   const logoOffsetY = 8;
   ctx.fillStyle = '#0066B3';
   ctx.font = `bold ${logoFontSize}px Arial`;
