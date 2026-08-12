@@ -752,7 +752,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     return;
   }
 
-  // ===== LANJUTKAN BUKA KAMERA =====
+  // ===== BUKA KAMERA =====
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = 'image/*';
@@ -770,16 +770,15 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     reader.onload = function(ev) {
       const img = new Image();
       img.onload = function() {
-        // === RESIZE GAMBAR (1024x768, kualitas tetap bagus) ===
+        // === RESIZE GAMBAR (1024x768) ===
         const MAX_WIDTH = 1024;
         const MAX_HEIGHT = 768;
         let width = img.width;
         let height = img.height;
 
-        // Hitung rasio agar tidak melebihi MAX
         const ratioX = MAX_WIDTH / width;
         const ratioY = MAX_HEIGHT / height;
-        const ratio = Math.min(ratioX, ratioY, 1); // jangan perbesar jika lebih kecil
+        const ratio = Math.min(ratioX, ratioY, 1);
 
         width = Math.round(width * ratio);
         height = Math.round(height * ratio);
@@ -790,21 +789,30 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
 
-        // Gambar foto (resize)
+        // Gambar foto
         ctx.drawImage(img, 0, 0, width, height);
 
-        // === SIMPAN BASE64 (kualitas 0.85) ===
-        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
-        const base64 = dataUrl.split(',')[1];
+        // === AMBIL NAMA USER DARI APPS SCRIPT ===
+        const emailUser = document.getElementById('email').value.trim() || 'User';
+        const kodeToko = document.getElementById('kodeToko').value.trim() || 'NOCODE';
+        const namaToko = document.getElementById('namaToko').value.trim() || 'Nama Toko';
 
-        // Simpan ke variabel global
-        fotoBase64 = base64;
-
-        // === TAMPILKAN PREVIEW ===
-        document.getElementById('imgPreview').src = dataUrl;
-        document.getElementById('previewFoto').style.display = 'block';
-        document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
-        
+        // Panggil Apps Script untuk ambil nama user
+        google.script.run
+          .withSuccessHandler(function(userRes) {
+            let namaUser = 'User';
+            if (userRes && userRes.success && userRes.namaUser) {
+              namaUser = userRes.namaUser;
+            }
+            // Lanjutkan proses watermark dengan nama user
+            tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser);
+          })
+          .withFailureHandler(function(error) {
+            console.error('Gagal ambil nama user:', error);
+            // Tetap lanjut dengan nama default
+            tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, 'User', emailUser);
+          })
+          .getNamaUser(emailUser);
       };
       img.src = ev.target.result;
     };
@@ -816,300 +824,102 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
   input.remove();
 });
 
-     // === TAMBAHKAN WATERMARK ===
-
-const kodeToko = document.getElementById('kodeToko').value.trim() || 'NOCODE';
-const namaToko = document.getElementById('namaToko').value.trim() || 'Nama Toko';
-
-// Ambil email user
-const emailUser = document.getElementById('email').value.trim();
-
-// ===============================
-// AMBIL NAMA USER DARI APPS SCRIPT
-// ===============================
-
-  google.script.run
-  .withSuccessHandler(function(userRes) {
-
-    let namaUser = "User";
-
-    if (userRes && userRes.success && userRes.namaUser) {
-      namaUser = userRes.namaUser;
-    }
-
-    // ===============================
-    // WAKTU FOTO DIAMBIL
-    // ===============================
-
-    const now = new Date();
-
-    const tanggal = now.toLocaleDateString('id-ID', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
-
-    const jam = now.toLocaleTimeString('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit',
-      hour12: false
-    });
-
-    // ===============================
-    // UKURAN FONT
-    // ===============================
-
-    const fontSize = Math.max(18, width * 0.038);
-
-    const logoFontSize = fontSize * 1.35;
-
-    const padding = fontSize * 0.65;
-
-    const lineHeight = fontSize * 1.45;
-
-    const logoHeight = logoFontSize * 1.1;
-
-    // ===============================
-    // HITUNG LEBAR TEKS
-    // ===============================
-
-    ctx.font = `bold ${fontSize}px Arial`;
-
-    const userText = `👤 ${namaUser}`;
-    const tokoText = `📍 ${kodeToko} - ${namaToko}`;
-    const timeText = `🕒 ${tanggal} | ${jam}`;
-
-    const userWidth = ctx.measureText(userText).width;
-    const tokoWidth = ctx.measureText(tokoText).width;
-    const timeWidth = ctx.measureText(timeText).width;
-
-    const textWidth = Math.max(
-      userWidth,
-      tokoWidth,
-      timeWidth
-    );
-
-    // ===============================
-    // UKURAN LOGO ALFAMART
-    // ===============================
-
-    ctx.font = `bold ${logoFontSize}px Arial`;
-
-    const alfaWidth = ctx.measureText("ALFA").width;
-
-    ctx.font = `italic bold ${logoFontSize}px Arial`;
-
-    const martWidth = ctx.measureText("MART").width;
-
-    const logoWidth = alfaWidth + martWidth;
-
-    // ===============================
-    // UKURAN BOX
-    // ===============================
-
-    const boxWidth =
-      Math.max(logoWidth, textWidth) +
-      (padding * 2) +
-      20;
-
-    const boxHeight =
-      logoHeight +
-      (lineHeight * 3) +
-      (padding * 2) +
-      15;
-
-    // ===============================
-    // POSISI
-    // ===============================
-
-    const margin = 20;
-
-    const x = margin;
-    const y = height - boxHeight - margin;
-
-    // ===============================
-    // BACKGROUND PUTIH
-    // ===============================
-
-    ctx.save();
-
-    ctx.shadowColor = 'rgba(0,0,0,0.15)';
-    ctx.shadowBlur = 5;
-
-    const gradient = ctx.createLinearGradient(
-      x,
-      y,
-      x + boxWidth,
-      y
-    );
-
-    // Hampir seluruh area putih pekat
-    gradient.addColorStop(0, 'rgba(255,255,255,0.92)');
-    gradient.addColorStop(0.75, 'rgba(255,255,255,0.92)');
-
-    // Hanya ujung yang mulai transparan
-    gradient.addColorStop(0.93, 'rgba(255,255,255,0.75)');
-    gradient.addColorStop(1, 'rgba(255,255,255,0.25)');
-
-    ctx.fillStyle = gradient;
-
-    ctx.fillRect(
-      x,
-      y,
-      boxWidth,
-      boxHeight
-    );
-
-    // ===============================
-    // GARIS MERAH KIRI
-    // ===============================
-
-    const redLine = ctx.createLinearGradient(
-      x,
-      y,
-      x,
-      y + boxHeight
-    );
-
-    redLine.addColorStop(0, '#D71920');
-    redLine.addColorStop(1, '#B5121B');
-
-    ctx.fillStyle = redLine;
-
-    ctx.fillRect(
-      x,
-      y,
-      5,
-      boxHeight
-    );
-
-    // ===============================
-    // LOGO ALFAMART
-    // ===============================
-
-    const logoX = x + 18;
-    const logoY = y + padding;
-
-    // ALFA - BIRU
-    ctx.fillStyle = '#0066B3';
-
-    ctx.font = `bold ${logoFontSize}px Arial`;
-
-    ctx.fillText(
-      'ALFA',
-      logoX,
-      logoY
-    );
-
-    // MART - MERAH & MIRING
-    ctx.fillStyle = '#D71920';
-
-    ctx.font = `italic bold ${logoFontSize}px Arial`;
-
-    ctx.fillText(
-      'MART',
-      logoX + alfaWidth,
-      logoY
-    );
-
-    // ===============================
-    // INFORMASI USER
-    // ===============================
-
-    ctx.fillStyle = '#111111';
-
-    ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-
-    ctx.fillText(
-      userText,
-      logoX,
-      logoY + logoHeight + lineHeight * 0.65
-    );
-
-    // ===============================
-    // INFORMASI TOKO
-    // ===============================
-
-    ctx.fillText(
-      tokoText,
-      logoX,
-      logoY + logoHeight + lineHeight * 1.65
-    );
-
-    // ===============================
-    // WAKTU
-    // ===============================
-
-    ctx.fillText(
-      timeText,
-      logoX,
-      logoY + logoHeight + lineHeight * 2.65
-    );
-
-    ctx.restore();
-
-    // ===============================
-    // SIMPAN BASE64
-    // ===============================
-
-    const dataUrl = canvas.toDataURL(
-      'image/jpeg',
-      0.92
-    );
-
-    const base64 = dataUrl.split(',')[1];
-
-    fotoBase64 = base64;
-
-    // ===============================
-    // PREVIEW
-    // ===============================
-
-    document.getElementById('imgPreview').src = dataUrl;
-
-    document.getElementById('previewFoto').style.display = 'block';
-
-    document.getElementById('statusFoto').innerHTML =
-      '✅ Foto berhasil diambil';
-
-  })
-  .withFailureHandler(function(error) {
-
-    console.error(
-      'Gagal mengambil nama user:',
-      error
-    );
-
-    // Kalau gagal mengambil nama,
-    // tetap lanjut dengan nama User
-
-    const namaUser = "User";
-
-    // Lanjutkan proses watermark...
-  })
-  .getNamaUser(emailUser);
-
-        // === SIMPAN BASE64 ===
-        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
-        const base64 = dataUrl.split(',')[1];
-
-        fotoBase64 = base64;
-
-        // Tampilkan preview
-        document.getElementById('imgPreview').src = dataUrl;
-        document.getElementById('previewFoto').style.display = 'block';
-        document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
-      };
-      img.src = ev.target.result;
-    };
-    reader.readAsDataURL(file);
-  };
-
-  document.body.appendChild(input);
-  input.click();
-  input.remove();
-});
+// ===== FUNGSI TAMBAHKAN WATERMARK =====
+function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser) {
+  const now = new Date();
+  const tanggal = now.toLocaleDateString('id-ID', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric'
+  });
+  const jam = now.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  // Ukuran font
+  const fontSize = Math.max(18, width * 0.038);
+  const logoFontSize = fontSize * 1.35;
+  const padding = fontSize * 0.65;
+  const lineHeight = fontSize * 1.45;
+  const logoHeight = logoFontSize * 1.1;
+
+  // Hitung lebar teks
+  ctx.font = `bold ${fontSize}px Arial`;
+  const userText = `👤 ${namaUser}`;
+  const tokoText = `📍 ${kodeToko} - ${namaToko}`;
+  const timeText = `🕒 ${tanggal} | ${jam}`;
+  const userWidth = ctx.measureText(userText).width;
+  const tokoWidth = ctx.measureText(tokoText).width;
+  const timeWidth = ctx.measureText(timeText).width;
+  const textWidth = Math.max(userWidth, tokoWidth, timeWidth);
+
+  // Logo ALFAMART
+  ctx.font = `bold ${logoFontSize}px Arial`;
+  const alfaWidth = ctx.measureText('ALFA').width;
+  ctx.font = `italic bold ${logoFontSize}px Arial`;
+  const martWidth = ctx.measureText('MART').width;
+  const logoWidth = alfaWidth + martWidth;
+
+  // Ukuran box
+  const boxWidth = Math.max(logoWidth, textWidth) + (padding * 2) + 20;
+  const boxHeight = logoHeight + (lineHeight * 3) + (padding * 2) + 15;
+  const margin = 20;
+  const x = margin;
+  const y = height - boxHeight - margin;
+
+  // Background putih transparan
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.15)';
+  ctx.shadowBlur = 5;
+
+  const gradient = ctx.createLinearGradient(x, y, x + boxWidth, y);
+  gradient.addColorStop(0, 'rgba(255,255,255,0.92)');
+  gradient.addColorStop(0.75, 'rgba(255,255,255,0.92)');
+  gradient.addColorStop(0.93, 'rgba(255,255,255,0.75)');
+  gradient.addColorStop(1, 'rgba(255,255,255,0.25)');
+  ctx.fillStyle = gradient;
+  ctx.fillRect(x, y, boxWidth, boxHeight);
+
+  // Garis merah kiri
+  const redLine = ctx.createLinearGradient(x, y, x, y + boxHeight);
+  redLine.addColorStop(0, '#D71920');
+  redLine.addColorStop(1, '#B5121B');
+  ctx.fillStyle = redLine;
+  ctx.fillRect(x, y, 5, boxHeight);
+
+  // Logo ALFAMART
+  const logoX = x + 18;
+  const logoY = y + padding;
+  ctx.fillStyle = '#0066B3';
+  ctx.font = `bold ${logoFontSize}px Arial`;
+  ctx.fillText('ALFA', logoX, logoY);
+  ctx.fillStyle = '#D71920';
+  ctx.font = `italic bold ${logoFontSize}px Arial`;
+  ctx.fillText('MART', logoX + alfaWidth, logoY);
+
+  // Informasi user
+  ctx.fillStyle = '#111111';
+  ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
+  ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.65);
+  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.65);
+  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.65);
+
+  ctx.restore();
+
+  // === SIMPAN BASE64 ===
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+  const base64 = dataUrl.split(',')[1];
+
+  fotoBase64 = base64;
+
+  // Tampilkan preview
+  document.getElementById('imgPreview').src = dataUrl;
+  document.getElementById('previewFoto').style.display = 'block';
+  document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
+}
 
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
