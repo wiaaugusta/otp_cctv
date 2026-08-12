@@ -891,6 +891,19 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   ctx.font = `italic bold ${logoFontSize}px Arial`;
   ctx.fillText('MART', logoX + alfaWidth, logoY);
 
+  // Garis merah bawah logo
+  ctx.fillStyle = '#D71920';
+
+  const logoLineY = logoY + logoFontSize * 0.95;
+  const logoLineHeight = Math.max(2, fontSize * 0.10);
+
+  ctx.fillRect(
+    logoX,
+    logoLineY,
+    logoWidth,
+    logoLineHeight
+  );
+
   // Informasi user
   ctx.fillStyle = '#111111';
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
