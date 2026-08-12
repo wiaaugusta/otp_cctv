@@ -820,11 +820,9 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
 // ===== FUNGSI TAMBAHKAN WATERMARK =====
 function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser) {
   const now = new Date();
-  const tanggal = now.toLocaleDateString('id-ID', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric'
-  });
+  // Format tanggal: 12 Aug 2026
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  const tanggal = now.toLocaleDateString('en-GB', options);
   const jam = now.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
@@ -869,9 +867,9 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   ctx.shadowBlur = 5;
 
   const gradient = ctx.createLinearGradient(x, y, x + boxWidth, y);
-  gradient.addColorStop(0, 'rgba(255,255,255,0.92)');
-  gradient.addColorStop(0.75, 'rgba(255,255,255,0.92)');
-  gradient.addColorStop(0.93, 'rgba(255,255,255,0.75)');
+  gradient.addColorStop(0, 'rgba(255,255,255,0.82)');
+  gradient.addColorStop(0.75, 'rgba(255,255,255,0.82)');
+  gradient.addColorStop(0.93, 'rgba(255,255,255,0.70)');
   gradient.addColorStop(1, 'rgba(255,255,255,0.25)');
   ctx.fillStyle = gradient;
   ctx.fillRect(x, y, boxWidth, boxHeight);
@@ -885,7 +883,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 
   // Logo ALFAMART
   const logoX = x + 18;
-  const logoY = y + padding;
+  const logoY = y + padding + 4;
   ctx.fillStyle = '#0066B3';
   ctx.font = `bold ${logoFontSize}px Arial`;
   ctx.fillText('ALFA', logoX, logoY);
