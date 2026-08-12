@@ -884,17 +884,18 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   // Logo ALFAMART
   const logoX = x + 18;
   const logoY = y + padding + 20;
+  const logoOffsetY = 5;
   ctx.fillStyle = '#0066B3';
   ctx.font = `bold ${logoFontSize}px Arial`;
-  ctx.fillText('ALFA', logoX, logoY);
+  ctx.fillText('ALFA', logoX, logoY + logoOffsetY);
   ctx.fillStyle = '#D71920';
   ctx.font = `italic bold ${logoFontSize}px Arial`;
-  ctx.fillText('MART', logoX + alfaWidth, logoY);
+  ctx.fillText('MART', logoX + alfaWidth, logoY + logoOffsetY);
 
   // Garis merah bawah logo
   ctx.fillStyle = '#D71920';
 
-  const logoLineY = logoY + logoFontSize * 0.65;
+  const logoLineY = logoY + logoFontSize * 0.55;
   const logoLineHeight = Math.max(2, fontSize * 0.13);
 
   ctx.fillRect(
