@@ -734,7 +734,7 @@
     }
   }
    
-   // ===== FOTO & PREVIEW =====
+// ===== FOTO & PREVIEW =====
 let fotoBase64 = ''; // simpan base64 foto untuk dikirim saat submit
 
 document.getElementById('ambilFotoBtn').addEventListener('click', function() {
@@ -744,12 +744,12 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
 
   if (!kode) {
     showResult('⚠️ Kode toko wajib diisi terlebih dahulu', 'error');
-    return; // Batalkan proses
+    return;
   }
 
   if (!nama || nama.includes('tidak ditemukan') || nama.includes('Gagal') || nama.includes('Error') || nama.includes('timeout') || nama === '') {
     showResult('⚠️ Nama toko tidak valid. Pastikan kode toko sudah dicari (tekan Enter).', 'error');
-    return; // Batalkan proses
+    return;
   }
 
   // ===== LANJUTKAN BUKA KAMERA =====
@@ -770,23 +770,19 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     reader.onload = function(ev) {
       const img = new Image();
       img.onload = function() {
-        // === RESIZE GAMBAR ===
+        // === RESIZE GAMBAR (1024x768, kualitas tetap bagus) ===
         const MAX_WIDTH = 1024;
         const MAX_HEIGHT = 768;
         let width = img.width;
         let height = img.height;
 
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height = Math.round(height * (MAX_WIDTH / width));
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width = Math.round(width * (MAX_HEIGHT / height));
-            height = MAX_HEIGHT;
-          }
-        }
+        // Hitung rasio agar tidak melebihi MAX
+        const ratioX = MAX_WIDTH / width;
+        const ratioY = MAX_HEIGHT / height;
+        const ratio = Math.min(ratioX, ratioY, 1); // jangan perbesar jika lebih kecil
+
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
 
         // === BUAT CANVAS ===
         const canvas = document.createElement('canvas');
@@ -794,8 +790,31 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         canvas.height = height;
         const ctx = canvas.getContext('2d');
 
-        // Gambar foto
+        // Gambar foto (resize)
         ctx.drawImage(img, 0, 0, width, height);
+
+        // === SIMPAN BASE64 (kualitas 0.85) ===
+        const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+        const base64 = dataUrl.split(',')[1];
+
+        // Simpan ke variabel global
+        fotoBase64 = base64;
+
+        // === TAMPILKAN PREVIEW ===
+        document.getElementById('imgPreview').src = dataUrl;
+        document.getElementById('previewFoto').style.display = 'block';
+        document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
+        
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  document.body.appendChild(input);
+  input.click();
+  input.remove();
+});
 
      // === TAMBAHKAN WATERMARK ===
 
