@@ -817,7 +817,6 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
   input.remove();
 });
 
-// ===== FUNGSI TAMBAHKAN WATERMARK =====
 function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser) {
   const now = new Date();
   const tanggal = now.toLocaleDateString('en-GB', {
@@ -825,7 +824,6 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
     month: 'short',
     year: 'numeric'
   });
-
   const jam = now.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
@@ -844,68 +842,31 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   const timeText = `🕒 ${tanggal} | ${jam}`;
 
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-
   const userWidth = ctx.measureText(userText).width;
   const tokoWidth = ctx.measureText(tokoText).width;
   const timeWidth = ctx.measureText(timeText).width;
-
-  const textWidth = Math.max(
-    userWidth,
-    tokoWidth,
-    timeWidth
-  );
-
-  // ==========================================
-  // LOGO ALFAMART
-  // ==========================================
+  const textWidth = Math.max(userWidth, tokoWidth, timeWidth);
 
   ctx.font = `bold ${logoFontSize}px Arial`;
   const alfaWidth = ctx.measureText('ALFA').width;
-
   ctx.font = `italic bold ${logoFontSize}px Arial`;
   const martWidth = ctx.measureText('MART').width;
-
   const logoWidth = alfaWidth + martWidth;
+
   const topSpace = 12;
   const bottomSpace = 14;
-
-  const boxWidth =
-    Math.max(logoWidth, textWidth) +
-    (padding * 2) +
-    20;
-
-  const boxHeight =
-    topSpace +
-    logoHeight +
-    (lineHeight * 3) +
-    bottomSpace +
-    padding;
-
-
-  // ==========================================
-  // POSISI
-  // ==========================================
+  const boxWidth = Math.max(logoWidth, textWidth) + (padding * 2) + 20;
+  const boxHeight = topSpace + logoHeight + (lineHeight * 3) + bottomSpace + padding;
 
   const margin = 20;
-
   const x = margin;
   const y = height - boxHeight - margin;
-
-  // ==========================================
-  // BACKGROUND
-  // ==========================================
 
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.10)';
   ctx.shadowBlur = 5;
 
-  const gradient = ctx.createLinearGradient(
-    x,
-    y,
-    x + boxWidth,
-    y
-  );
-
+  const gradient = ctx.createLinearGradient(x, y, x + boxWidth, y);
   gradient.addColorStop(0.00, 'rgba(255,255,255,0.62)');
   gradient.addColorStop(0.30, 'rgba(255,255,255,0.58)');
   gradient.addColorStop(0.60, 'rgba(255,255,255,0.52)');
@@ -914,80 +875,33 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   gradient.addColorStop(1.00, 'rgba(255,255,255,0.12)');
 
   ctx.fillStyle = gradient;
+  ctx.fillRect(x, y, boxWidth, boxHeight);
 
-  ctx.fillRect(
-    x,
-    y,
-    boxWidth,
-    boxHeight
-  );
-
-  const redLine = ctx.createLinearGradient(
-    x,
-    y,
-    x,
-    y + boxHeight
-  );
-
+  const redLine = ctx.createLinearGradient(x, y, x, y + boxHeight);
   redLine.addColorStop(0, '#D71920');
   redLine.addColorStop(1, '#B5121B');
-
   ctx.fillStyle = redLine;
-
-  ctx.fillRect(
-    x,
-    y,
-    5,
-    boxHeight
-  );
+  ctx.fillRect(x, y, 5, boxHeight);
 
   ctx.textBaseline = 'top';
-
   const logoX = x + 18;
   const logoY = y + padding + topSpace;
 
-  // ALFA
   ctx.fillStyle = '#0066B3';
   ctx.font = `bold ${logoFontSize}px Arial`;
+  ctx.fillText('ALFA', logoX, logoY);
 
-  ctx.fillText(
-    'ALFA',
-    logoX,
-    logoY
-  );
-
-  // MART
   ctx.fillStyle = '#D71920';
   ctx.font = `italic bold ${logoFontSize}px Arial`;
-
-  ctx.fillText(
-    'MART',
-    logoX + alfaWidth,
-    logoY
-  );
+  ctx.fillText('MART', logoX + alfaWidth, logoY);
 
   ctx.fillStyle = '#111111';
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
-  // USER
-  ctx.fillText(
-    userText,
-    logoX,
-    logoY + logoHeight + 8
-  );
-  // TOKO
-  ctx.fillText(
-    tokoText,
-    logoX,
-    logoY + logoHeight + 8 + lineHeight
-  );
-  // WAKTU
-  ctx.fillText(
-    timeText,
-    logoX,
-    logoY + logoHeight + 8 + (lineHeight * 2)
-  );
+  ctx.fillText(userText, logoX, logoY + logoHeight + 8);
+  ctx.fillText(tokoText, logoX, logoY + logoHeight + 8 + lineHeight);
+  ctx.fillText(timeText, logoX, logoY + logoHeight + 8 + (lineHeight * 2));
+
   ctx.restore();
-}
 
   // === SIMPAN BASE64 ===
   const dataUrl = canvas.toDataURL('image/jpeg', 0.99);
