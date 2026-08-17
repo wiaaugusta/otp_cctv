@@ -931,6 +931,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 
 
   // ===== SUBMIT REQUEST OTP =====
+  // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
   // Cegah jika sedang memproses
   if (isFetching || isSubmitting) return;
@@ -968,27 +969,34 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   showLoading();
 
   try {
-    // Ambil GPS
-    const pos = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject);
-    });
-    const lat = pos.coords.latitude;
-    const lng = pos.coords.longitude;
+    // Ambil GPS (dengan timeout 5 detik agar tidak menggantung jika GPS mati)
+    let lat = 0;
+    let lng = 0;
+    try {
+      const pos = await new Promise((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 7000 });
+      });
+      lat = pos.coords.latitude;
+      lng = pos.coords.longitude;
+    } catch (geoErr) {
+      console.warn("GPS gagal/timeout, melanjutkan tanpa koordinat:", geoErr.message);
+    }
 
-    // Kirim request
-    const formData = new URLSearchParams();
-    formData.append('action', 'requestOtp');
-    formData.append('email', email);
-    formData.append('kode', kode);
-    formData.append('role', role);
-    formData.append('foto', fotoBase64);
-    formData.append('lat', lat);
-    formData.append('lng', lng);
+    // PERBAIKAN: Kirim sebagai JSON Payload agar Base64 tidak terpotong
+    const payload = {
+      action: 'requestOtp',
+      email: email,
+      kode: kode,
+      role: role,
+      foto: fotoBase64,
+      lat: lat,
+      lng: lng
+    };
 
     const response = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // Menggunakan text/plain / json untuk menghindari pre-flight CORS
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -1017,8 +1025,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
     }
   } catch (error) {
     console.error('submitRequest error:', error);
-    let msg = 'Gagal mendapatkan lokasi: ' + error.message;
-    if (error.code === 1) msg = 'Izin lokasi ditolak. Aktifkan GPS dan izinkan akses lokasi.';
+    let msg = 'Gagal memproses permintaan: ' + error.message;
     showResultPopup('❌', 'Error!', msg, false);
     showResult(msg, 'error');
   } finally {
