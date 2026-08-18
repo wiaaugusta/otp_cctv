@@ -640,50 +640,45 @@
         namaInput.className = '';
         return;
       }
-      if (!isFetching) {
-        fetchNamaToko(kode);
-        this.blur(); // Sembunyikan keyboard di mobile
-      }
+      // Hapus validasi !isFetching agar user bisa melakukan pencarian ulang jika sebelumnya macet
+      fetchNamaToko(kode);
+      this.blur(); // Sembunyikan keyboard di mobile
     }
   });
 
   // ===== FETCH DENGAN CACHE & THROTTLE =====
-  async function fetchNamaToko(kode, retryCount = 0) {
-    // (Kode fetch sama dengan versi sebelumnya, tidak perlu diubah)
-    // Pastikan Anda sudah memiliki fungsi ini dari implementasi sebelumnya.
-    // Saya sertakan versi ringkasnya di bawah sebagai placeholder.
-    // Silakan gunakan kode fetch yang sudah Anda miliki.
-    if (isFetching) return;
+  async function fetchNamaToko(kode) {
     const kodeUpper = kode.toUpperCase().trim();
 
+    // 1. Cek Cache Lokal Dulu
     if (cache.has(kodeUpper)) {
       const cached = cache.get(kodeUpper);
       if (cached.success) {
         namaInput.value = cached.namaToko;
         namaInput.className = 'success';
       } else {
-        namaInput.value = '❌ ' + (cached.message || 'Kode toko tidak terdaftar');
+        namaInput.value = '🔍 Silahkan cari ulang';
         namaInput.className = 'error';
       }
       return;
     }
 
+    // 2. Jeda Request Berjalan Silent (Tanpa Pesan Detik)
     const now = Date.now();
     const timeSinceLast = now - lastRequestTime;
     if (timeSinceLast < MIN_REQUEST_INTERVAL && lastRequestTime > 0) {
       const waitTime = MIN_REQUEST_INTERVAL - timeSinceLast;
-      loadingText.textContent = 'Menunggu jeda...';
-      loadingSub.textContent = `Tunggu ${(waitTime/1000).toFixed(1)} detik`;
-      overlay.classList.add('active');
       await new Promise(resolve => setTimeout(resolve, waitTime));
-      overlay.classList.remove('active');
     }
 
+    // 3. Set State Loading
     isFetching = true;
     lastRequestTime = Date.now();
     overlay.classList.add('active');
     loadingText.textContent = 'Mencari toko...';
     loadingSub.textContent = 'Harap tunggu sebentar';
+    
+    // Teks status di kolom input
     namaInput.value = '🔍 Mencari...';
     namaInput.className = 'loading';
     resultDiv.style.display = 'none';
@@ -692,43 +687,35 @@
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
       const url = `${API_URL}?action=getNamaToko&kode=${encodeURIComponent(kodeUpper)}`;
+      
       const response = await fetch(url, { signal: controller.signal });
       clearTimeout(timeoutId);
+
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const result = await response.json();
-      cache.set(kodeUpper, result);
+
       if (result.success) {
+        cache.set(kodeUpper, result);
         namaInput.value = result.namaToko;
         namaInput.className = 'success';
       } else {
-        namaInput.value = '❌ ' + (result.message || 'Kode toko tidak terdaftar');
+        cache.set(kodeUpper, { success: false, message: result.message });
+        namaInput.value = '❌ Kode toko tidak terdaftar';
         namaInput.className = 'error';
       }
+
     } catch (error) {
       console.error('fetchNamaToko error:', error);
-      let errorMsg = '';
-      if (error.name === 'AbortError') {
-        errorMsg = '⏱️ Koneksi timeout, coba lagi';
-        if (retryCount < 2) {
-          loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
-          await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
-          await fetchNamaToko(kode, retryCount + 1);
-          return;
-        }
-      } else if (error.message === 'Failed to fetch' || error.message.includes('NetworkError')) {
-        errorMsg = '⚠️ Gagal terhubung ke server';
-        if (retryCount < 2) {
-          loadingSub.textContent = `Mencoba ulang (${retryCount+1}/2)...`;
-          await new Promise(resolve => setTimeout(resolve, 2000 * (retryCount + 1)));
-          await fetchNamaToko(kode, retryCount + 1);
-          return;
-        }
-      } else {
-        errorMsg = '⚠️ Error: ' + error.message;
-      }
-      cache.set(kodeUpper, { success: false, message: errorMsg });
-      namaInput.value = errorMsg;
+      
+      // Jika Timeout / Gagal Koneksi -> Minta Cari Ulang
+      namaInput.value = '🔍 Silahkan cari ulang';
       namaInput.className = 'error';
+
+      if (error.name === 'AbortError') {
+        showResult('⏱️ Koneksi lambat/timeout. Tekan Enter di Kode Toko untuk cari ulang.', 'error');
+      } else {
+        showResult('⚠️ Gagal terhubung ke server. Tekan Enter di Kode Toko untuk cari ulang.', 'error');
+      }
     } finally {
       isFetching = false;
       overlay.classList.remove('active');
@@ -737,6 +724,7 @@
    
 // ===== FOTO & PREVIEW =====
 let fotoBase64 = '';
+let loadingInterval = null; // Variable untuk animasi titik-titik
 
 document.getElementById('ambilFotoBtn').addEventListener('click', function() {
   const kode = document.getElementById('kodeToko').value.trim();
@@ -765,6 +753,20 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
       return;
     }
 
+    // === START ANIMASI LOADING TEKS ===
+    const statusFoto = document.getElementById('statusFoto');
+    let dots = 0;
+    statusFoto.style.color = '#1a6b9e';
+    statusFoto.style.fontWeight = '600';
+    
+    // Hentikan interval lama jika ada
+    if (loadingInterval) clearInterval(loadingInterval);
+    
+    loadingInterval = setInterval(() => {
+      dots = (dots % 3) + 1;
+      statusFoto.textContent = '⏳ Memproses foto' + '.'.repeat(dots);
+    }, 400);
+
     const reader = new FileReader();
     reader.onload = function(ev) {
       const img = new Image();
@@ -792,7 +794,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
         const kodeToko = document.getElementById('kodeToko').value.trim() || 'NOCODE';
         const namaToko = document.getElementById('namaToko').value.trim() || 'Nama Toko';
 
-        // ===== FETCH NAMA USER (bukan google.script.run) =====
+        // ===== FETCH NAMA USER =====
         fetch(`${API_URL}?action=getNamaUser&email=${encodeURIComponent(emailUser)}`)
           .then(response => response.json())
           .then(userRes => {
@@ -923,10 +925,20 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 
   fotoBase64 = base64;
 
+  // === STOP ANIMASI LOADING & TAMPILKAN HASIL ===
+  if (loadingInterval) {
+    clearInterval(loadingInterval);
+    loadingInterval = null;
+  }
+
   // Tampilkan preview
   document.getElementById('imgPreview').src = dataUrl;
   document.getElementById('previewFoto').style.display = 'block';
-  document.getElementById('statusFoto').innerHTML = '✅ Foto berhasil diambil';
+  
+  const statusFoto = document.getElementById('statusFoto');
+  statusFoto.style.color = '#1d6b3e';
+  statusFoto.style.fontWeight = '500';
+  statusFoto.innerHTML = '✅ Foto berhasil diambil';
 }
 
 
