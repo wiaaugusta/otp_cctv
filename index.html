@@ -452,7 +452,78 @@
   height: auto;
   display: block;
   }
+
+    /* ===== SEGMENTED CONTROL APPROVAL ===== */
+    .segmented-control {
+      display: flex;
+      gap: 8px;
+    }
     
+    .seg-btn {
+      flex: 1;
+      padding: 12px 6px;
+      border: 1.5px solid #dce4ec;
+      border-radius: 12px;
+      background: #f9fbfd;
+      color: #1e3b5a;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-family: inherit;
+    }
+    
+    .seg-btn:active {
+      transform: scale(0.97);
+    }
+    
+    .seg-icon {
+      font-size: 16px;
+      font-weight: 700;
+      display: none;
+    }
+    
+    .seg-btn.active .seg-icon {
+      display: inline;
+    }
+    
+    /* Sudah - Hijau */
+    .seg-btn.active[data-value="sudah"] {
+      background: #e3f0e8;
+      border-color: #27ae60;
+      color: #155724;
+    }
+    
+    /* Belum - Kuning */
+    .seg-btn.active[data-value="belum"] {
+      background: #fef9e6;
+      border-color: #f5b342;
+      color: #856404;
+    }
+    
+    /* Gangguan - Merah */
+    .seg-btn.active[data-value="gangguan"] {
+      background: #fde8e8;
+      border-color: #e74c3c;
+      color: #721c24;
+    }
+    
+    /* Responsif HP */
+    @media (max-width: 600px) {
+      .seg-btn {
+        padding: 10px 4px;
+        font-size: 13px;
+        gap: 3px;
+      }
+      .seg-icon {
+        font-size: 14px;
+      }
+    }
+        
   </style>
 </head>
 <body>
@@ -507,6 +578,25 @@
         <input type="text" id="namaToko" readonly placeholder=" ">
       </div>
 
+      <div class="form-group">
+        <label>Input Approval Online <span style="color:red;">*</span></label>
+        <div class="segmented-control" id="segmentedApproval">
+          <button type="button" class="seg-btn" data-value="sudah">
+            <span class="seg-icon"></span>
+            <span>Sudah</span>
+          </button>
+          <button type="button" class="seg-btn" data-value="belum">
+            <span class="seg-icon"></span>
+            <span>Belum</span>
+          </button>
+          <button type="button" class="seg-btn" data-value="gangguan">
+            <span class="seg-icon"></span>
+            <span>Gangguan</span>
+          </button>
+        </div>
+        <div class="hint">Pilih status Approval CCTV di toko ini</div>
+      </div>
+            
       <div class="form-group">
       <label for="foto">Foto Lokasi Toko <span style="color:red;">*</span></label>
       <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
@@ -942,8 +1032,39 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   statusFoto.innerHTML = '✅ Foto berhasil diambil';
 }
 
+  // ===== SEGMENTED CONTROL APPROVAL =====
+  let approvalValue = ''; // default belum dipilih
+  
+  document.querySelectorAll('.seg-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const val = this.dataset.value;
+  
+      // Klik ulang untuk membatalkan pilihan
+      if (approvalValue === val) {
+        approvalValue = '';
+        document.querySelectorAll('.seg-btn').forEach(b => {
+          b.classList.remove('active');
+          b.querySelector('.seg-icon').textContent = '';
+        });
+        return;
+      }
+  
+      // Reset semua
+      document.querySelectorAll('.seg-btn').forEach(b => {
+        b.classList.remove('active');
+        b.querySelector('.seg-icon').textContent = '';
+      });
+  
+      // Aktifkan yang dipilih
+      approvalValue = val;
+      this.classList.add('active');
+      const iconSpan = this.querySelector('.seg-icon');
+      if (val === 'sudah') iconSpan.textContent = '✓';
+      else if (val === 'belum') iconSpan.textContent = '✗';
+      else if (val === 'gangguan') iconSpan.textContent = '⚠';
+    });
+  });
 
-  // ===== SUBMIT REQUEST OTP =====
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
   // Cegah jika sedang memproses
@@ -967,6 +1088,16 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
     showResult('Kode toko tidak valid, periksa kembali', 'error');
     return;
   }
+    // Validasi Approval CCTV
+  if (!approvalValue) {
+    showResult('⚠️ Pilih status Approval Online terlebih dahulu', 'error');
+    return;
+  }
+  if (approvalValue === 'belum') {
+    showResult('⚠️ Silahkan Mengisi Request Approval Online terlebih dahulu.', 'error');
+    return;
+  }
+  
   if (!fotoBase64) {
     showResult('Harap ambil foto selfie di toko terlebih dahulu', 'error');
     return;
@@ -1031,6 +1162,12 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
       document.getElementById('previewFoto').style.display = 'none';
       document.getElementById('statusFoto').textContent = 'Belum ada foto';
       document.getElementById('imgPreview').src = '';
+      // Reset approval
+      approvalValue = '';
+      document.querySelectorAll('.seg-btn').forEach(b => {
+        b.classList.remove('active');
+        b.querySelector('.seg-icon').textContent = '';
+      });
       document.activeElement?.blur();
     } else {
       showResultPopup('❌', 'Gagal!', result.message, false);
