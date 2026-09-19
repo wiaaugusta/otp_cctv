@@ -454,75 +454,115 @@
   }
 
     /* ===== SEGMENTED CONTROL APPROVAL ===== */
-    .segmented-control {
-      display: flex;
-      gap: 8px;
-    }
-    
+  .segmented-control {
+    position: relative;
+    display: flex;
+    background: #eef2f7;
+    border-radius: 14px;
+    padding: 4px;
+    border: 1.5px solid #dce4ec;
+    overflow: hidden;
+  }
+  
+  /* Slider yang bergeser */
+  .seg-slider {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    width: calc((100% - 8px) / 3);
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.3s ease;
+    z-index: 1;
+    transform: translateX(0);
+    opacity: 0;
+  }
+  
+  .seg-slider.active {
+    opacity: 1;
+  }
+  
+  .seg-slider[data-pos="0"] { transform: translateX(0); }
+  .seg-slider[data-pos="1"] { transform: translateX(100%); }
+  .seg-slider[data-pos="2"] { transform: translateX(200%); }
+  
+  .seg-btn {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+    padding: 12px 6px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-family: inherit;
+    border-radius: 10px;
+  }
+  
+  .seg-btn:active {
+    transform: scale(0.97);
+  }
+  
+  /* Warna teks saat aktif */
+  .seg-btn.active[data-value="sudah"] { color: #27ae60; }
+  .seg-btn.active[data-value="belum"] { color: #d39e00; }
+  .seg-btn.active[data-value="gangguan"] { color: #e74c3c; }
+  
+  .seg-icon {
+    font-weight: 700;
+    display: none;
+  }
+  
+  .seg-btn.active .seg-icon {
+    display: inline;
+  }
+  
+  /* Note di bawah */
+  .approval-note-info {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #f0f7ff;
+    border-left: 3px solid #3498db;
+    border-radius: 8px;
+    font-size: 12.5px;
+    color: #2c5282;
+    line-height: 1.5;
+    animation: fadeInNote 0.3s ease;
+  }
+  
+  .approval-note-info.show {
+    display: block;
+  }
+  
+  @keyframes fadeInNote {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @media (max-width: 600px) {
     .seg-btn {
-      flex: 1;
-      padding: 12px 6px;
-      border: 1.5px solid #dce4ec;
-      border-radius: 12px;
-      background: #f9fbfd;
-      color: #1e3b5a;
-      font-weight: 600;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 6px;
-      font-family: inherit;
+      padding: 10px 4px;
+      font-size: 13px;
+      gap: 3px;
     }
-    
-    .seg-btn:active {
-      transform: scale(0.97);
-    }
-    
     .seg-icon {
-      font-size: 16px;
-      font-weight: 700;
-      display: none;
+      font-size: 13px;
     }
-    
-    .seg-btn.active .seg-icon {
-      display: inline;
+    .approval-note-info {
+      font-size: 11.5px;
+      padding: 9px 12px;
     }
-    
-    /* Sudah - Hijau */
-    .seg-btn.active[data-value="sudah"] {
-      background: #e3f0e8;
-      border-color: #27ae60;
-      color: #155724;
-    }
-    
-    /* Belum - Kuning */
-    .seg-btn.active[data-value="belum"] {
-      background: #fef9e6;
-      border-color: #f5b342;
-      color: #856404;
-    }
-    
-    /* Gangguan - Merah */
-    .seg-btn.active[data-value="gangguan"] {
-      background: #fde8e8;
-      border-color: #e74c3c;
-      color: #721c24;
-    }
-    
-    /* Responsif HP */
-    @media (max-width: 600px) {
-      .seg-btn {
-        padding: 10px 4px;
-        font-size: 13px;
-        gap: 3px;
-      }
-      .seg-icon {
-        font-size: 14px;
-      }
-    }
+  }
         
   </style>
 </head>
@@ -594,7 +634,6 @@
             <span>Gangguan</span>
           </button>
         </div>
-        <div class="hint">Pilih status Approval CCTV di toko ini</div>
       </div>
             
       <div class="form-group">
@@ -1033,37 +1072,61 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 }
 
   // ===== SEGMENTED CONTROL APPROVAL =====
-  let approvalValue = ''; // default belum dipilih
-  
-  document.querySelectorAll('.seg-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const val = this.dataset.value;
-  
-      // Klik ulang untuk membatalkan pilihan
-      if (approvalValue === val) {
-        approvalValue = '';
-        document.querySelectorAll('.seg-btn').forEach(b => {
+    let approvalValue = '';
+    
+    const segSlider = document.getElementById('segSlider');
+    const segButtons = document.querySelectorAll('.seg-btn');
+    const approvalNoteInfo = document.getElementById('approvalNoteInfo');
+    
+    // Warna slider sesuai pilihan
+    const sliderColors = {
+      'sudah': '#e3f0e8',
+      'belum': '#fef9e6',
+      'gangguan': '#fde8e8'
+    };
+    
+    segButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const val = this.dataset.value;
+        const pos = this.dataset.pos;
+    
+        // Jika klik tombol yang sama → batalkan pilihan
+        if (approvalValue === val) {
+          approvalValue = '';
+          segSlider.classList.remove('active');
+          segButtons.forEach(b => {
+            b.classList.remove('active');
+            b.querySelector('.seg-icon').textContent = '';
+          });
+          approvalNoteInfo.classList.remove('show');
+          return;
+        }
+    
+        // Reset semua
+        segButtons.forEach(b => {
           b.classList.remove('active');
           b.querySelector('.seg-icon').textContent = '';
         });
-        return;
-      }
-  
-      // Reset semua
-      document.querySelectorAll('.seg-btn').forEach(b => {
-        b.classList.remove('active');
-        b.querySelector('.seg-icon').textContent = '';
+    
+        // Aktifkan yang dipilih
+        approvalValue = val;
+        this.classList.add('active');
+    
+        // Set icon
+        const icon = this.querySelector('.seg-icon');
+        if (val === 'sudah') icon.textContent = '✓';
+        else if (val === 'belum') icon.textContent = '✗';
+        else if (val === 'gangguan') icon.textContent = '⚠';
+    
+        // Geser slider
+        segSlider.setAttribute('data-pos', pos);
+        segSlider.style.background = sliderColors[val] || '#ffffff';
+        segSlider.classList.add('active');
+    
+        // Tampilkan note
+        approvalNoteInfo.classList.add('show');
       });
-  
-      // Aktifkan yang dipilih
-      approvalValue = val;
-      this.classList.add('active');
-      const iconSpan = this.querySelector('.seg-icon');
-      if (val === 'sudah') iconSpan.textContent = '✓';
-      else if (val === 'belum') iconSpan.textContent = '✗';
-      else if (val === 'gangguan') iconSpan.textContent = '⚠';
     });
-  });
 
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
@@ -1164,10 +1227,12 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
       document.getElementById('imgPreview').src = '';
       // Reset approval
       approvalValue = '';
-      document.querySelectorAll('.seg-btn').forEach(b => {
+      segSlider.classList.remove('active');
+      segButtons.forEach(b => {
         b.classList.remove('active');
         b.querySelector('.seg-icon').textContent = '';
       });
+      approvalNoteInfo.classList.remove('show');
       document.activeElement?.blur();
     } else {
       showResultPopup('❌', 'Gagal!', result.message, false);
