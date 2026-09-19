@@ -780,6 +780,7 @@
       this.blur(); // Sembunyikan keyboard di mobile
     }
   });
+   
 
   // ===== FETCH DENGAN CACHE & THROTTLE =====
   async function fetchNamaToko(kode) {
@@ -1063,16 +1064,9 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   ctx.fillStyle = '#111111';
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
   ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.75);
-  // Baris approval dengan warna sesuai status
-  if (approvalStatus === 'sudah') {ctx.fillStyle = '#27ae60';       // Hijau
-  } else if (approvalStatus === 'gangguan') {ctx.fillStyle = '#e74c3c';       // Merah
-  } else { ctx.fillStyle = '#666666';       // Abu-abu (fallback) 
-  }        
   ctx.fillText(approvalText, logoX, logoY + logoHeight + lineHeight * 1.75);
-  // Kembalikan warna gelap untuk toko & waktu
-  ctx.fillStyle = '#111111';
-  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.75);
-  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.75);
+  ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 2.75);
+  ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 3.75);
 
   ctx.restore();
 
@@ -1096,6 +1090,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   statusFoto.style.color = '#1d6b3e';
   statusFoto.style.fontWeight = '500';
   statusFoto.innerHTML = '✅ Foto berhasil diambil';
+  clearResult();
 }
 
   // ===== SEGMENTED CONTROL APPROVAL =====
@@ -1291,6 +1286,12 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   }
 }
 
+   function clearResult() {
+  resultDiv.style.display = 'none';
+  resultDiv.textContent = '';
+  resultDiv.className = '';
+}
+
   // ===== TOGGLE APPROVAL NOTE =====
   function toggleApprovalNote() {
     approvalNote.classList.toggle('show', roleSelect.value === 'admin');
@@ -1305,6 +1306,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
       namaInput.value = '';
       namaInput.className = '';
     }
+      clearResult();
   });
 
   // ===== ENTER DI EMAIL UNTUK SUBMIT =====
@@ -1315,6 +1317,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
       this.blur();
     }
   });
+  emailInput.addEventListener('input', clearResult);
 
   // ===== KLIK DI LUAR INPUT UNTUK SEMBUNYIKAN KEYBOARD =====
   document.addEventListener('click', function(e) {
