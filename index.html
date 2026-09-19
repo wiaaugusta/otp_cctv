@@ -618,22 +618,28 @@
       </div>
 
       <div class="form-group">
-        <label>Input Approval Online <span style="color:red;">*</span></label>
-        <div class="segmented-control" id="segmentedApproval">
-          <button type="button" class="seg-btn" data-value="sudah">
-            <span class="seg-icon"></span>
-            <span>Sudah</span>
-          </button>
-          <button type="button" class="seg-btn" data-value="belum">
-            <span class="seg-icon"></span>
-            <span>Belum</span>
-          </button>
-          <button type="button" class="seg-btn" data-value="gangguan">
-            <span class="seg-icon"></span>
-            <span>Gangguan</span>
-          </button>
-        </div>
+      <label>Input Approval Online <span style="color:red;">*</span></label>
+      <div class="segmented-control" id="segmentedApproval">
+        <!-- Pill putih yang bergeser -->
+        <div class="seg-slider" id="segSlider"></div>
+        
+        <button type="button" class="seg-btn" data-value="sudah" data-pos="0">
+          <span class="seg-icon"></span>
+          <span>Sudah</span>
+        </button>
+        <button type="button" class="seg-btn" data-value="belum" data-pos="1">
+          <span class="seg-icon"></span>
+          <span>Belum</span>
+        </button>
+        <button type="button" class="seg-btn" data-value="gangguan" data-pos="2">
+          <span class="seg-icon"></span>
+          <span>Gangguan</span>
+        </button>
       </div>
+      <div class="approval-note-info" id="approvalNoteInfo">
+        Pastikan Anda telah menginput Approval Online dengan benar. Ketidaksesuaian data sepenuhnya menjadi tanggung jawab pengguna.
+      </div>
+    </div>
             
       <div class="form-group">
       <label for="foto">Foto Lokasi Toko <span style="color:red;">*</span></label>
