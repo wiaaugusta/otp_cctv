@@ -453,7 +453,7 @@
   display: block;
   }
 
-    /* ===== SEGMENTED CONTROL APPROVAL ===== */
+  /* ===== SEGMENTED CONTROL APPROVAL ===== */
   .segmented-control {
     position: relative;
     display: flex;
@@ -461,23 +461,24 @@
     border-radius: 14px;
     padding: 4px;
     border: 1.5px solid #dce4ec;
-    overflow: hidden;
   }
   
-  /* Slider yang bergeser */
+  /* Pill putih yang bergeser */
   .seg-slider {
     position: absolute;
     top: 4px;
     bottom: 4px;
+    left: 4px;
     width: calc((100% - 8px) / 3);
     border-radius: 10px;
     background: #ffffff;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                background-color 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+                background-color 0.3s ease,
+                opacity 0.2s ease;
     z-index: 1;
-    transform: translateX(0);
     opacity: 0;
+    pointer-events: none;
   }
   
   .seg-slider.active {
@@ -503,16 +504,16 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 5px;
     font-family: inherit;
     border-radius: 10px;
+    -webkit-tap-highlight-color: transparent;
   }
   
   .seg-btn:active {
     transform: scale(0.97);
   }
   
-  /* Warna teks saat aktif */
   .seg-btn.active[data-value="sudah"] { color: #27ae60; }
   .seg-btn.active[data-value="belum"] { color: #d39e00; }
   .seg-btn.active[data-value="gangguan"] { color: #e74c3c; }
@@ -526,7 +527,7 @@
     display: inline;
   }
   
-  /* Note di bawah */
+  /* Note otomatis muncul saat ada pilihan */
   .approval-note-info {
     display: none;
     margin-top: 10px;
@@ -537,11 +538,11 @@
     font-size: 12.5px;
     color: #2c5282;
     line-height: 1.5;
-    animation: fadeInNote 0.3s ease;
   }
   
   .approval-note-info.show {
     display: block;
+    animation: fadeInNote 0.3s ease;
   }
   
   @keyframes fadeInNote {
@@ -555,9 +556,7 @@
       font-size: 13px;
       gap: 3px;
     }
-    .seg-icon {
-      font-size: 13px;
-    }
+    .seg-icon { font-size: 13px; }
     .approval-note-info {
       font-size: 11.5px;
       padding: 9px 12px;
@@ -1078,11 +1077,11 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
     const segButtons = document.querySelectorAll('.seg-btn');
     const approvalNoteInfo = document.getElementById('approvalNoteInfo');
     
-    // Warna slider sesuai pilihan
+    // Warna pill sesuai pilihan
     const sliderColors = {
-      'sudah': '#e3f0e8',
-      'belum': '#fef9e6',
-      'gangguan': '#fde8e8'
+      'sudah': '#e3f0e8',      // hijau sangat lembut
+      'belum': '#fef9e6',      // kuning sangat lembut
+      'gangguan': '#fde8e8'    // merah sangat lembut
     };
     
     segButtons.forEach(btn => {
@@ -1090,7 +1089,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
         const val = this.dataset.value;
         const pos = this.dataset.pos;
     
-        // Jika klik tombol yang sama → batalkan pilihan
+        // Klik ulang → batalkan
         if (approvalValue === val) {
           approvalValue = '';
           segSlider.classList.remove('active');
@@ -1102,13 +1101,13 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
           return;
         }
     
-        // Reset semua
+        // Reset semua tombol
         segButtons.forEach(b => {
           b.classList.remove('active');
           b.querySelector('.seg-icon').textContent = '';
         });
     
-        // Aktifkan yang dipilih
+        // Aktifkan tombol yang dipilih
         approvalValue = val;
         this.classList.add('active');
     
@@ -1118,16 +1117,16 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
         else if (val === 'belum') icon.textContent = '✗';
         else if (val === 'gangguan') icon.textContent = '⚠';
     
-        // Geser slider
+        // Geser pill & ubah warnanya
         segSlider.setAttribute('data-pos', pos);
-        segSlider.style.background = sliderColors[val] || '#ffffff';
+        segSlider.style.background = sliderColors[val];
         segSlider.classList.add('active');
     
         // Tampilkan note
         approvalNoteInfo.classList.add('show');
       });
     });
-
+   
   // ===== SUBMIT REQUEST OTP =====
   async function submitRequest() {
   // Cegah jika sedang memproses
