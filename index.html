@@ -637,7 +637,7 @@
         </button>
       </div>
       <div class="approval-note-info" id="approvalNoteInfo">
-        Pastikan Anda telah menginput Approval Online dengan benar. Ketidaksesuaian data sepenuhnya menjadi tanggung jawab pengguna.
+        Pastikan Anda telah menginput Approval Online. Ketidaksesuaian data sepenuhnya menjadi tanggung jawab pengguna.
       </div>
     </div>
             
@@ -1128,8 +1128,12 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
         segSlider.style.background = sliderColors[val];
         segSlider.classList.add('active');
     
-        // Tampilkan note
-        approvalNoteInfo.classList.add('show');
+        // Tampilkan note HANYA jika pilih "sudah"
+        if (val === 'sudah') {
+          approvalNoteInfo.classList.add('show');
+        } else {
+          approvalNoteInfo.classList.remove('show');
+        }
       });
     });
    
