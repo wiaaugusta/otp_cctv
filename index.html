@@ -874,6 +874,15 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
     showResult('⚠️ Nama toko tidak valid. Pastikan kode toko sudah dicari (tekan Enter).', 'error');
     return;
   }
+    // Validasi Approval Online wajib dipilih
+  if (!approvalValue) {
+    showResult('⚠️ Pilih status Input Approval Online terlebih dahulu sebelum mengambil foto.', 'error');
+    return;
+  }
+  if (approvalValue === 'belum') {
+    showResult('⚠️ Silahkan Mengisi Request Approval Online terlebih dahulu sebelum mengambil foto.', 'error');
+    return;
+  }
 
   const input = document.createElement('input');
   input.type = 'file';
@@ -1273,10 +1282,14 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 }
 
   function showResult(message, type) {
-    resultDiv.textContent = message;
-    resultDiv.className = type;
-    resultDiv.style.display = 'block';
+  resultDiv.textContent = message;
+  resultDiv.className = type;
+  resultDiv.style.display = 'block';
+  // Scroll ke pesan error agar langsung terlihat
+  if (type === 'error') {
+    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
+}
 
   // ===== TOGGLE APPROVAL NOTE =====
   function toggleApprovalNote() {
