@@ -937,11 +937,11 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
             if (userRes && userRes.success && userRes.namaUser) {
               namaUser = userRes.namaUser;
             }
-            tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser);
+            tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser,approvalValue);
           })
           .catch(error => {
             console.error('Gagal ambil nama user:', error);
-            tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, 'User', emailUser);
+            tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, 'User', emailUser,approvalValue);
           });
       };
       img.src = ev.target.result;
@@ -955,7 +955,7 @@ document.getElementById('ambilFotoBtn').addEventListener('click', function() {
 });
 
 // ===== FUNGSI TAMBAHKAN WATERMARK =====
-function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser) {
+function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, namaUser, emailUser,approvalStatus) {
   const now = new Date();
   // Format tanggal: 12 Aug 2026
   const options = { day: '2-digit', month: 'short', year: 'numeric' };
@@ -979,6 +979,11 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   const userText = `👤 ${namaUser}`;
   const tokoText = `📍 ${kodeToko} - ${namaToko}`;
   const timeText = `🕒 ${tanggal} | ${jam}`;
+  // Tentukan teks approval (hanya "sudah" & "gangguan" yang valid)
+  let approvalText = '';
+  if (approvalStatus === 'sudah') {approvalText = `✔️ Input Approval : Sudah`;
+  } else if (approvalStatus === 'gangguan') {approvalText = `⚠️ Input Approval : Gangguan`;
+  } else { approvalText = `Input Approval : -`;}
   const userWidth = ctx.measureText(userText).width;
   const tokoWidth = ctx.measureText(tokoText).width;
   const timeWidth = ctx.measureText(timeText).width;
@@ -993,7 +998,7 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
 
   // Ukuran box
   const boxWidth = Math.max(logoWidth, textWidth) + (padding * 2) + 23;
-  const boxHeight = logoHeight + (lineHeight * 3) + (padding * 2) + 5;
+  const boxHeight = logoHeight + (lineHeight * 4) + (padding * 2) + 5;
   const margin = 20;
   const x = margin;
   const y = height - boxHeight - margin;
@@ -1049,6 +1054,14 @@ function tambahkanWatermark(ctx, canvas, width, height, kodeToko, namaToko, nama
   ctx.fillStyle = '#111111';
   ctx.font = `600 ${fontSize}px 'Segoe UI', Arial, sans-serif`;
   ctx.fillText(userText, logoX, logoY + logoHeight + lineHeight * 0.75);
+  // Baris approval dengan warna sesuai status
+  if (approvalStatus === 'sudah') {ctx.fillStyle = '#27ae60';       // Hijau
+  } else if (approvalStatus === 'gangguan') {ctx.fillStyle = '#e74c3c';       // Merah
+  } else { ctx.fillStyle = '#666666';       // Abu-abu (fallback) 
+  }        
+  ctx.fillText(approvalText, logoX, logoY + logoHeight + lineHeight * 1.75);
+  // Kembalikan warna gelap untuk toko & waktu
+  ctx.fillStyle = '#111111';
   ctx.fillText(tokoText, logoX, logoY + logoHeight + lineHeight * 1.75);
   ctx.fillText(timeText, logoX, logoY + logoHeight + lineHeight * 2.75);
 
