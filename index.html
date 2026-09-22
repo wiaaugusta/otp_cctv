@@ -863,8 +863,16 @@ let fotoBase64 = '';
 let loadingInterval = null; // Variable untuk animasi titik-titik
 
 document.getElementById('ambilFotoBtn').addEventListener('click', function() {
+  const email = document.getElementById('email').value.trim();
   const kode = document.getElementById('kodeToko').value.trim();
   const nama = document.getElementById('namaToko').value.trim();
+
+  // Validasi Email
+  if (!email) {
+    showResult('⚠️ Email wajib diisi terlebih dahulu sebelum mengambil foto.', 'error');
+    return;
+  }
+
 
   if (!kode) {
     showResult('⚠️ Kode toko wajib diisi terlebih dahulu', 'error');
